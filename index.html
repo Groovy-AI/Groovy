@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Chatbot</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  #chat { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
+  #userInput { width: 80%; }
+  #sendBtn { width: 18%; }
+  .message { margin: 5px 0; }
+  .user { color: blue; }
+  .bot { color: green; }
+</style>
+</head>
+<body>
+<h1>AI Chatbot</h1>
+<div id="chat"></div>
+<input type="text" id="userInput" placeholder="Type your message...">
+<button id="sendBtn">Send</button>
+
+<script>
+const chat = document.getElementById('chat');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+
+const API_KEY = "YOUR_OPENAI_API_KEY"; // ⚠️ Visible to everyone
+
+sendBtn.addEventListener('click', sendMessage);
+userInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+
+function appendMessage(sender, text) {
+  const msgDiv = document.createElement('div');
+  msgDiv.classList.add('message', sender);
+  msgDiv.textContent = text;
+  chat.appendChild(msgDiv);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+async function sendMessage() {
+  const message = userInput.value.trim();
+  if (!message) return;
+  appendMessage('user', message);
+  userInput.value = '';
+  appendMessage('bot', 'Typing...');
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: message }]
+      })
+    });
+    const data = await res.json();
+    chat.querySelector('.bot:last-child').textContent = data.choices[0].message.content;
+  } catch (err) {
+    chat.querySelector('.bot:last-child').textContent = 'Error: Could not get response.';
+  }
+}
+</script>
+</body>
+</html>
