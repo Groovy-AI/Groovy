@@ -49,9 +49,9 @@ body {
   transition: transform 0.3s;
   cursor: grab;
   margin-bottom:20px;
-  position: absolute; /* changed from relative to absolute for proper dragging */
-  left: calc(50% - 100px); /* center horizontally */
-  top: 100px; /* initial vertical position */
+  position: absolute;
+  left: calc(50% - 100px);
+  top: 100px;
 }
 .bounce { animation: bounce 0.6s ease; }
 .dance { animation: dance 0.5s infinite alternate; }
@@ -86,20 +86,23 @@ body {
 <div id="level">Level: 1</div>
 <ul>
   <li><button onclick="interact('feed')">Feed</button></li>
+  <li><button onclick="interact('drink')">Give Water</button></li>
   <li><button onclick="interact('play')">Play</button></li>
   <li><button onclick="interact('charge')">Charge</button></li>
   <li><button onclick="interact('pet')">Pet</button></li>
   <li><button onclick="interact('joke')">Tell a Joke</button></li>
-  <li><button onclick="interact('status')">Status</button></li>
   <li><button onclick="interact('dance')">Dance</button></li>
   <li><button onclick="interact('sleep')">Sleep</button></li>
   <li><button onclick="interact('workout')">Workout</button></li>
   <li><button onclick="interact('bath')">Bath</button></li>
   <li><button onclick="interact('hug')">Hug</button></li>
-  <li><button onclick="interact('light')">Turn on Lights</button></li>
   <li><button onclick="interact('birthday')">Birthday</button></li>
   <li><button onclick="interact('game')">Play Number Game</button></li>
 </ul>
+<div id="hunger">Hunger: 0%</div>
+<div id="thirst">Thirst: 0%</div>
+<div id="cleanliness">Cleanliness: 100%</div>
+<div id="health">Health: 100%</div>
 </div>
 
 <div id="main">
@@ -114,13 +117,22 @@ const output = document.getElementById('output');
 const energyEl = document.getElementById('energy');
 const levelEl = document.getElementById('level');
 const moodEl = document.getElementById('mood');
+const hungerEl = document.getElementById('hunger');
+const thirstEl = document.getElementById('thirst');
+const cleanlinessEl = document.getElementById('cleanliness');
+const healthEl = document.getElementById('health');
 const body = document.body;
 
 let energy = localStorage.getItem('groovyEnergy')? parseInt(localStorage.getItem('groovyEnergy')): 100;
 let level = localStorage.getItem('groovyLevel')? parseInt(localStorage.getItem('groovyLevel')): 1;
 let exp = localStorage.getItem('groovyExp')? parseInt(localStorage.getItem('groovyExp')): 0;
 let happiness = localStorage.getItem('groovyHappiness')? parseInt(localStorage.getItem('groovyHappiness')): 80;
+let hunger = localStorage.getItem('groovyHunger')? parseInt(localStorage.getItem('groovyHunger')): 0;
+let thirst = localStorage.getItem('groovyThirst')? parseInt(localStorage.getItem('groovyThirst')): 0;
+let cleanliness = localStorage.getItem('groovyCleanliness')? parseInt(localStorage.getItem('groovyCleanliness')): 100;
+let health = 100;
 
+// Jokes and idle messages
 const jokes = [
 "Why did the robot go on vacation? He needed to recharge his batteries! 🔋",
 "What do you call a pirate robot? Arrr2-D2! 🏴‍☠️",
@@ -139,83 +151,54 @@ const idleMessages = [
 "Fun level: MAX! 🎉","Ready for adventure! 🏁"
 ];
 
-function updateGroovy(){
+// Update Groovy stats
+function updateGroovyStats(){
   energyEl.textContent = `Energy: ${energy}%`;
   levelEl.textContent = `Level: ${level}`;
+  moodEl.textContent = happiness>80?'😄':happiness>50?'🙂':happiness>20?'😐':'😢';
+  hungerEl.textContent = `Hunger: ${hunger}%`;
+  thirstEl.textContent = `Thirst: ${thirst}%`;
+  cleanlinessEl.textContent = `Cleanliness: ${cleanliness}%`;
+  health = 100 - ((hunger + thirst)/2 + (100-energy)/2 + (100-cleanliness)/2)/3;
+  if(health<0) health=0;
+  healthEl.textContent = `Health: ${Math.round(health)}%`;
+
   localStorage.setItem('groovyEnergy', energy);
+  localStorage.setItem('groovyHappiness', happiness);
+  localStorage.setItem('groovyHunger', hunger);
+  localStorage.setItem('groovyThirst', thirst);
+  localStorage.setItem('groovyCleanliness', cleanliness);
   localStorage.setItem('groovyLevel', level);
   localStorage.setItem('groovyExp', exp);
-  localStorage.setItem('groovyHappiness', happiness);
-  updateMood();
 }
 
-function updateMood(){
-  if(happiness <= 20) moodEl.textContent = '😢';
-  else if(happiness <=50) moodEl.textContent = '😐';
-  else if(happiness <=80) moodEl.textContent = '🙂';
-  else moodEl.textContent = '😄';
-}
+// Gain experience and happiness
+function gainExp(amount){ exp+=amount; if(exp>=100){ level++; exp=0; showMessage(`🎉 Groovy leveled up! Now at level ${level}!`); } }
+function gainHappiness(amount){ happiness+=amount; if(happiness>100) happiness=100; if(happiness<0) happiness=0; updateGroovyStats(); }
 
+// Show messages
 function showMessage(msg){
   output.textContent = msg;
   groovy.classList.add('bounce');
   setTimeout(()=>{ groovy.classList.remove('bounce'); },600);
 }
 
-function gainExp(amount){
-  exp += amount;
-  if(exp>=100){ 
-    level++;
-    exp = 0;
-    showMessage(`🎉 Groovy leveled up! Now at level ${level}!`);
-  }
-}
+// Idle animations
+function idleAnimations(){ if(Math.random()<0.3){ groovy.classList.add('tilt'); setTimeout(()=>{ groovy.classList.remove('tilt'); },800); } }
 
-function gainHappiness(amount){
-  happiness += amount;
-  if(happiness > 100) happiness = 100;
-  if(happiness < 0) happiness = 0;
-  updateMood();
-}
-
-function idleAnimations(){
-  if(Math.random()<0.3){
-    groovy.classList.add('tilt');
-    setTimeout(()=>{ groovy.classList.remove('tilt'); },800);
-  }
-}
-
+// Periodic stat decay and idle messages
 setInterval(()=>{
-  energy -=1;
-  if(energy<0) energy=0;
-  happiness -= 2;
-  if(happiness<0) happiness=0;
-  updateGroovy();
-  if(Math.random()<0.2){
-    showMessage(idleMessages[Math.floor(Math.random()*idleMessages.length)]);
-  }
+  energy -=1; if(energy<0) energy=0;
+  happiness -=1; if(happiness<0) happiness=0;
+  hunger +=2; if(hunger>100) hunger=100;
+  thirst +=2; if(thirst>100) thirst=100;
+  cleanliness -=1; if(cleanliness<0) cleanliness=0;
+  updateGroovyStats();
+  if(Math.random()<0.2) showMessage(idleMessages[Math.floor(Math.random()*idleMessages.length)]);
   idleAnimations();
 },10000);
 
-// Friendly reminders
-setInterval(() => {
-    if(energy > 20 && happiness > 20){
-        if(Math.random() < 0.2){
-            const reminders = [
-                "Hey! Let's do something fun! 🎉",
-                "I love spending time with you! 🤗",
-                "Don't forget to pet or play with me! 💚",
-                "Feeling groovy? Let's interact! 😎",
-                "Groovy wants some attention! 🖐️"
-            ];
-            showMessage(reminders[Math.floor(Math.random()*reminders.length)]);
-            groovy.classList.add('tilt');
-            setTimeout(()=>{ groovy.classList.remove('tilt'); }, 800);
-        }
-    }
-}, 30000 + Math.random()*20000);
-
-// Intro messages
+// Intro sequence
 function intro(){
     const introText = [
         "🤖 Hello! My name is Groovy, your personal virtual robot companion!",
@@ -243,23 +226,67 @@ function intro(){
 function interact(action){
   let message="";
   switch(action){
-    case 'feed': energy+=20; if(energy>100)energy=100; gainExp(10); gainHappiness(5); message="Groovy: Yummy! 🍎 Energy increased!"; break;
-    case 'play': energy-=5; if(energy<0)energy=0; gainExp(15); gainHappiness(15); message="Groovy: That was fun! 😄"; break;
-    case 'charge': energy+=30; if(energy>100)energy=100; gainExp(5); gainHappiness(5); message="Groovy: Charging... ⚡ Energy boosted!"; break;
-    case 'pet': energy+=10; if(energy>100)energy=100; gainExp(10); gainHappiness(10); message="Groovy: Yay! Thanks for the love! 💚"; break;
-    case 'joke': gainExp(5); gainHappiness(5); message="Groovy: "+jokes[Math.floor(Math.random()*jokes.length)]; break;
-    case 'status': message=`Groovy: Energy - ${energy}% | Level - ${level} | Happiness - ${happiness}%`; break;
-    case 'dance': gainExp(15); gainHappiness(10); message="Groovy: Let's dance! 💃"; groovy.classList.add('dance'); setTimeout(()=>{ groovy.classList.remove('dance'); },3000); break;
-    case 'sleep': message="Groovy: Sleeping... 😴"; groovy.classList.add('sleep'); setTimeout(()=>{ groovy.classList.remove('sleep'); },5000); break;
-    case 'workout': energy-=10; if(energy<0)energy=0; gainExp(20); gainHappiness(5); message="Groovy: Working out! 💪 Energy down, fun up!"; break;
-    case 'bath': gainExp(5); gainHappiness(5); message="Groovy: Feeling clean and shiny! 🛁"; break;
-    case 'hug': energy+=5; if(energy>100)energy=100; gainExp(10); gainHappiness(10); message="Groovy: Aww, thanks for the hug! 🤗"; break;
-    case 'light': message="Groovy: Lights on! 💡"; body.style.backgroundColor = "#e0d8a8"; setTimeout(()=>{ body.style.backgroundColor=""; },500); break;
+    case 'feed':
+      hunger -= 20; if(hunger<0) hunger=0;
+      energy += 10; if(energy>100) energy=100;
+      gainExp(10); gainHappiness(5);
+      message="Groovy: Yummy! 🍎 Energy and hunger improved!";
+      break;
+    case 'drink':
+      thirst -= 20; if(thirst<0) thirst=0;
+      energy += 5; if(energy>100) energy=100;
+      gainExp(5); gainHappiness(5);
+      message="Groovy: Refreshing! 💧";
+      break;
+    case 'play':
+      energy -= 5; if(energy<0) energy=0;
+      gainExp(15); gainHappiness(15);
+      cleanliness -= 5; if(cleanliness<0) cleanliness=0;
+      message="Groovy: That was fun! 😄";
+      break;
+    case 'charge':
+      energy += 30; if(energy>100) energy=100;
+      gainExp(5); gainHappiness(5);
+      message="Groovy: Charging... ⚡ Energy boosted!";
+      break;
+    case 'pet':
+      energy += 10; if(energy>100) energy=100;
+      gainExp(10); gainHappiness(10);
+      message="Groovy: Yay! Thanks for the love! 💚";
+      break;
+    case 'bath':
+      cleanliness += 30; if(cleanliness>100) cleanliness=100;
+      gainExp(5); gainHappiness(5);
+      message="Groovy: Feeling clean and shiny! 🛁";
+      break;
+    case 'dance':
+      gainExp(15); gainHappiness(10);
+      message="Groovy: Let's dance! 💃";
+      groovy.classList.add('dance');
+      setTimeout(()=>{ groovy.classList.remove('dance'); },3000);
+      break;
+    case 'sleep':
+      message="Groovy: Sleeping... 😴";
+      groovy.classList.add('sleep');
+      setTimeout(()=>{ groovy.classList.remove('sleep'); },5000);
+      break;
+    case 'hug':
+      energy += 5; if(energy>100) energy=100;
+      gainExp(10); gainHappiness(10);
+      message="Groovy: Aww, thanks for the hug! 🤗";
+      break;
+    case 'joke':
+      gainExp(5); gainHappiness(5);
+      message="Groovy: "+jokes[Math.floor(Math.random()*jokes.length)];
+      break;
     case 'birthday':
       const today = new Date();
       const isBirthday = today.getMonth() === 7 && today.getDate() === 27;
-      if(isBirthday){ message="🎉 Happy Birthday! Groovy is celebrating today! 🎂"; groovy.classList.add('dance'); setTimeout(()=>{ groovy.classList.remove('dance'); },5000); }
-      else { message="Groovy: My birthday is on Aug 27! 🗓️"; }
+      if(isBirthday){
+        message="🎉 Happy Birthday! Groovy is celebrating today! 🎂";
+        groovy.classList.add('dance');
+        setTimeout(()=>{ groovy.classList.remove('dance'); },5000);
+      } else { message="Groovy: My birthday is on Aug 27! 🗓️"; }
       break;
     case 'game':
       const num = Math.floor(Math.random()*10)+1;
@@ -271,10 +298,10 @@ function interact(action){
     default: message="Groovy: Unknown action!";
   }
   showMessage(message);
-  updateGroovy();
+  updateGroovyStats();
 }
 
-// Dragging properly from mouse
+// Drag Groovy
 let isDragging = false, offsetX=0, offsetY=0;
 groovy.addEventListener('mousedown', (e)=>{
   isDragging = true;
@@ -282,10 +309,7 @@ groovy.addEventListener('mousedown', (e)=>{
   offsetY = e.clientY - groovy.offsetTop;
   groovy.style.cursor = 'grabbing';
 });
-document.addEventListener('mouseup', ()=>{
-  isDragging = false;
-  groovy.style.cursor = 'grab';
-});
+document.addEventListener('mouseup', ()=>{ isDragging = false; groovy.style.cursor = 'grab'; });
 document.addEventListener('mousemove', (e)=>{
   if(isDragging){
     groovy.style.left = (e.clientX - offsetX) + 'px';
@@ -293,7 +317,8 @@ document.addEventListener('mousemove', (e)=>{
   }
 });
 
-updateGroovy();
+// Initialize
+updateGroovyStats();
 intro();
 </script>
 
