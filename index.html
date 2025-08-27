@@ -3,104 +3,115 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Groovy Virtual Pet</title>
+<title>Hacker Simulator</title>
 <style>
   body {
-    font-family: 'Segoe UI', sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f0c27b, #4b1248);
-    color: white;
     margin: 0;
+    background: black;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
   }
-  h1 { font-size: 2.5rem; margin-bottom: 10px; }
-  #pet-container {
-    background: rgba(255,255,255,0.1);
-    padding: 20px;
-    border-radius: 20px;
-    text-align: center;
-    width: 300px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  #matrix {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
-  #groovy-img {
-    width: 150px;
-    margin: 10px 0;
-    animation: float 3s ease-in-out infinite;
-  }
-  @keyframes float {
-    0%,100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-  }
-  #buttons button {
-    margin: 5px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 12px;
-    background: #fff;
-    color: #4b1248;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.2s;
-  }
-  #buttons button:hover {
-    transform: scale(1.1);
-  }
-  #mood {
+  #console {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
     font-size: 1.2rem;
+    width: 95%;
+  }
+  .progress-bar {
+    background: #222;
+    border: 1px solid #00ff00;
+    width: 100%;
+    height: 20px;
     margin-top: 10px;
+  }
+  .progress {
+    background: #00ff00;
+    width: 0%;
+    height: 100%;
   }
 </style>
 </head>
 <body>
 
-<h1>Meet Groovy!</h1>
-<div id="pet-container">
-  <img id="groovy-img" src="https://i.imgur.com/4AiXzf8.png" alt="Groovy">
-  <p id="intro">Hi! I'm Groovy, your new virtual pet! 😎</p>
-  <div id="buttons">
-    <button onclick="interact('feed')">Feed</button>
-    <button onclick="interact('play')">Play</button>
-    <button onclick="interact('pet')">Pet</button>
-  </div>
-  <p id="mood">Mood: 😊 Happy</p>
+<canvas id="matrix"></canvas>
+<div id="console">
+  <p id="status">Initializing Hack Simulator...</p>
+  <div class="progress-bar"><div class="progress" id="progress"></div></div>
 </div>
 
 <script>
-  let happiness = 50;
+// MATRIX ANIMATION
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-  function updateMood() {
-    const moodEl = document.getElementById('mood');
-    if(happiness > 70) moodEl.textContent = 'Mood: 😄 Ecstatic!';
-    else if(happiness > 50) moodEl.textContent = 'Mood: 😊 Happy';
-    else if(happiness > 30) moodEl.textContent = 'Mood: 😐 Neutral';
-    else moodEl.textContent = 'Mood: 😢 Sad';
-  }
+const letters = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const fontSize = 16;
+const columns = Math.floor(canvas.width / fontSize);
+const drops = [];
+for (let x = 0; x < columns; x++) drops[x] = Math.random() * canvas.height;
 
-  function interact(action) {
-    const introEl = document.getElementById('intro');
-    if(action === 'feed') {
-      happiness += 10;
-      introEl.textContent = "Yum! Thanks for the food! 🍎";
-    } else if(action === 'play') {
-      happiness += 15;
-      introEl.textContent = "Yay! I love playing! 🎾";
-    } else if(action === 'pet') {
-      happiness += 5;
-      introEl.textContent = "Aww! I love pets! 🥰";
+function drawMatrix() {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#00ff00';
+  ctx.font = fontSize + 'px Courier';
+  for (let i = 0; i < drops.length; i++) {
+    const text = letters.charAt(Math.floor(Math.random() * letters.length));
+    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+      drops[i] = 0;
     }
-    if(happiness > 100) happiness = 100;
-    updateMood();
+    drops[i]++;
   }
+}
+setInterval(drawMatrix, 50);
 
-  // Introduce Groovy after 2 seconds
-  setTimeout(() => {
-    document.getElementById('intro').textContent = "Hey there! I'm Groovy, let's have fun together! 😎";
-  }, 2000);
+// FAKE HACKING PROGRESS
+let progress = 0;
+const statusEl = document.getElementById('status');
+const progressEl = document.getElementById('progress');
 
-  updateMood();
+const messages = [
+  'Connecting to mainframe...',
+  'Bypassing firewall...',
+  'Cracking password...',
+  'Accessing secret files...',
+  'Downloading data...',
+  'Injecting virus...',
+  'Admin privileges granted!'
+];
+
+function fakeHack() {
+  if (progress < 100) {
+    progress += Math.random() * 5;
+    if (progress > 100) progress = 100;
+    progressEl.style.width = progress + '%';
+
+    const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+    statusEl.textContent = randomMsg;
+    setTimeout(fakeHack, 500);
+  } else {
+    statusEl.textContent = 'HACK COMPLETE! 💻';
+  }
+}
+setTimeout(fakeHack, 1000);
+
+// OPTIONAL: Key press effects
+document.addEventListener('keydown', e => {
+  const keyMsg = `Command executed: ${e.key}`;
+  statusEl.textContent = keyMsg;
+});
 </script>
 
 </body>
