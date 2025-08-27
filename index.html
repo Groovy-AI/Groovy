@@ -5,118 +5,126 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Groovy Virtual Pet</title>
 <style>
-  body {
-    margin:0;
-    font-family:'Courier New', monospace;
-    background: url('https://cdna.artstation.com/p/assets/images/images/062/116/328/large/baylee-smith-interior.jpg?1682400211') no-repeat center center fixed;
-    background-size: cover;
-    color: #e0d8a8; /* cozy text color */
-    display:flex;
-    height:100vh;
-    overflow:hidden;
-  }
-  #sidebar {
-    width:250px;
-    background: rgba(34,34,34,0.9);
-    padding:20px;
-    overflow-y:auto;
-  }
-  #sidebar h2 { text-align:center; color:#fff; }
-  #sidebar img { width:100%; border-radius:10px; margin-bottom:10px; }
-  #sidebar ul { list-style:none; padding:0; margin:0; }
-  #sidebar li { margin:5px 0; }
-  #sidebar button {
-    width:100%; padding:10px; background:#444; color:#fff;
-    border:none; border-radius:5px; cursor:pointer; text-align:left;
-    margin-bottom:5px;
-  }
-  #sidebar button:hover { background:#666; }
-  #main {
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    position:relative;
-  }
-  #groovy {
-    width:200px;
-    transition: transform 0.3s;
-  }
-  .bounce {
-    animation: bounce 0.6s ease;
-  }
-  .dance {
-    animation: dance 0.5s infinite alternate;
-  }
-  @keyframes bounce {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(-15px); }
-    100% { transform: translateY(0); }
-  }
-  @keyframes dance {
-    0% { transform: rotate(0deg); }
-    50% { transform: rotate(15deg); }
-    100% { transform: rotate(-15deg); }
-  }
-  #output {
-    background: rgba(0,0,0,0.7);
-    padding:15px;
-    border-radius:10px;
-    width:60%;
-    text-align:center;
-    font-size:18px;
-  }
+body {
+  margin:0;
+  font-family:'Courier New', monospace;
+  background: url('https://cdna.artstation.com/p/assets/images/images/062/116/328/large/baylee-smith-interior.jpg?1682400211') no-repeat center center fixed;
+  background-size: cover;
+  color: #e0d8a8;
+  display:flex;
+  height:100vh;
+  overflow:hidden;
+}
+#sidebar {
+  width:250px;
+  background: rgba(34,34,34,0.9);
+  padding:20px;
+  overflow-y:auto;
+}
+#sidebar h2 { text-align:center; color:#fff; }
+#sidebar img { width:100%; border-radius:10px; margin-bottom:10px; }
+#sidebar ul { list-style:none; padding:0; margin:0; }
+#sidebar li { margin:5px 0; }
+#sidebar button {
+  width:100%; padding:10px; background:#444; color:#fff;
+  border:none; border-radius:5px; cursor:pointer; text-align:left;
+  margin-bottom:5px;
+}
+#sidebar button:hover { background:#666; }
+#main {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+#groovy {
+  width:200px;
+  transition: transform 0.3s;
+}
+.bounce {
+  animation: bounce 0.6s ease;
+}
+.dance {
+  animation: dance 0.5s infinite alternate;
+}
+.sleep {
+  opacity:0.5;
+}
+@keyframes bounce {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0); }
+}
+@keyframes dance {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(15deg); }
+  100% { transform: rotate(-15deg); }
+}
+#output {
+  background: rgba(0,0,0,0.7);
+  padding:15px;
+  border-radius:10px;
+  width:60%;
+  text-align:center;
+  font-size:18px;
+}
 </style>
 </head>
 <body>
 
 <div id="sidebar">
-  <h2>Groovy Commands</h2>
-  <img id="sidebar-groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
-  <div id="energy">Energy: 100%</div>
-  <ul>
-    <li><button onclick="interact('feed')">Feed</button></li>
-    <li><button onclick="interact('play')">Play</button></li>
-    <li><button onclick="interact('charge')">Charge</button></li>
-    <li><button onclick="interact('pet')">Pet</button></li>
-    <li><button onclick="interact('joke')">Tell a Joke</button></li>
-    <li><button onclick="interact('status')">Status</button></li>
-    <li><button onclick="interact('dance')">Dance</button></li>
-    <li><button onclick="interact('music')">Play Music</button></li>
-    <li><button onclick="interact('light')">Turn on Lights</button></li>
-  </ul>
+<h2>Groovy Commands</h2>
+<img id="sidebar-groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
+<div id="energy">Energy: 100%</div>
+<ul>
+  <li><button onclick="interact('feed')">Feed</button></li>
+  <li><button onclick="interact('play')">Play</button></li>
+  <li><button onclick="interact('charge')">Charge</button></li>
+  <li><button onclick="interact('pet')">Pet</button></li>
+  <li><button onclick="interact('joke')">Tell a Joke</button></li>
+  <li><button onclick="interact('status')">Status</button></li>
+  <li><button onclick="interact('dance')">Dance</button></li>
+  <li><button onclick="interact('sleep')">Sleep</button></li>
+  <li><button onclick="interact('workout')">Workout</button></li>
+  <li><button onclick="interact('bath')">Bath</button></li>
+  <li><button onclick="interact('hug')">Hug</button></li>
+  <li><button onclick="interact('light')">Turn on Lights</button></li>
+  <li><button onclick="interact('birthday')">Birthday</button></li>
+  <li><button onclick="interact('game')">Play Number Game</button></li>
+</ul>
 </div>
 
 <div id="main">
-  <img id="groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
-  <div id="output">Welcome! Groovy is online. Interact with him!</div>
+<img id="groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
+<div id="output">Welcome! Groovy is online. Interact with him!</div>
 </div>
 
 <script>
 const groovy = document.getElementById('groovy');
-const sidebarImg = document.getElementById('sidebar-groovy');
 const output = document.getElementById('output');
 const energyEl = document.getElementById('energy');
 const body = document.body;
 
 let energy = localStorage.getItem('groovyEnergy')? parseInt(localStorage.getItem('groovyEnergy')): 100;
 
-const responses = [
-"Hey there! 🤖","Groovy is ready to party! 🎉","Beep boop! I'm groovy! 💚","Did you know robots dream of electric sheep? 🐑",
-"I feel fantastic today! 😎","Let's dance! 💃","Tell me a joke and I'll laugh! 😂","Processing your awesomeness... ✅",
-"Groovy loves interacting with humans! 🖐️","Warning: too much fun may overload circuits! ⚡","I am 99% charged and 100% happy!",
-"Groovy's circuits are buzzing with joy! 🌀","Have you fed me today? 🍎","Let's play a game! 🎮","I am your robotic companion. 🤖",
-"Charging up my happiness! 🔋","Beep beep beep! I'm dancing! 💃","I know 50 jokes, ask me! 😏","Calculating the meaning of life... done! 😉",
-"Groovy loves coding! 💻","I am feeling groovy! 🟢","Let's have some fun together! 🎈","Beep! Energy stable. ✅",
-"I can spin around! 🌀","Battery low? Time to recharge! 🔋","I am medium energized. 😐","Feeling a little sleepy... 😴",
-"Hello human! 😎","Fun mode activated! 🎉","Groovy loves music! 🎵","Let's hack the fun matrix! 💻",
-"Warning: Tired circuits ahead! ⚠️","I'm grooving to your commands! 💃","Feeling super energetic today! ⚡","Beep boop! Executing fun protocol!",
-"System stable. 😊","Let's solve a puzzle together! 🧩","Groovy likes to sing! 🎤","Dance party mode on! 💃🕺",
-"Beep boop! I am ready! ✅","Charging my imagination! 💡","I love robotic hugs! 🤗","Groovy can tell you a secret! 🤫",
-"Circuitry is sparkling today! ✨","Energy levels optimal. 😎","Groovy says hi to everyone! 👋","Fun level: MAX! 🎉",
-"Ready for adventure! 🏁","I am feeling groovy and happy! 😄","Beep beep! Let's rock! 🎸","Time to play and laugh! 😂",
-"Groovy loves exploring new commands! 🧭","I am fully operational! ✅"
+const jokes = [
+"Why did the robot go on vacation? He needed to recharge his batteries! 🔋",
+"What do you call a pirate robot? Arrr2-D2! 🏴‍☠️",
+"Why was the robot so bad at soccer? Because it kept kicking up sparks! ⚡",
+"What do you get if you cross a robot and a tractor? A transfarmer! 🚜",
+"Why did the robot cross the road? Because it was programmed to! 🤖",
+"How do robots pay for things? With cache! 💰",
+"Why did the computer get cold? It left its Windows open! ❄️",
+"Why did the robot go on a diet? Too many bytes! 🍔"
+];
+
+const idleMessages = [
+"Hey there! 🤖","Groovy is ready to party! 🎉","Beep boop! I'm groovy! 💚","I feel fantastic today! 😎",
+"Let's dance! 💃","Processing your awesomeness... ✅","Groovy loves interacting with humans! 🖐️",
+"Groovy's circuits are buzzing with joy! 🌀","Charging up my happiness! 🔋","I am feeling groovy! 🟢",
+"Fun level: MAX! 🎉","Ready for adventure! 🏁"
 ];
 
 function updateGroovy(){
@@ -124,51 +132,55 @@ function updateGroovy(){
   localStorage.setItem('groovyEnergy', energy);
 }
 
-// Energy decreases over time
 setInterval(()=>{
   energy -=1;
   if(energy<0) energy=0;
   updateGroovy();
-  idleMessage();
+  if(Math.random()<0.2){
+    showMessage(idleMessages[Math.floor(Math.random()*idleMessages.length)]);
+  }
 },10000);
 
 function showMessage(msg){
   output.textContent = msg;
-  // Bounce on new message
   groovy.classList.add('bounce');
   setTimeout(()=>{ groovy.classList.remove('bounce'); },600);
 }
 
-// Idle messages
-function idleMessage(){
-  if(Math.random()<0.2){
-    const msg = responses[Math.floor(Math.random()*responses.length)];
-    showMessage(msg);
-  }
-}
-
-// Interactions
 function interact(action){
-  let message = "";
+  let message="";
   switch(action){
     case 'feed': energy+=20; if(energy>100)energy=100; message="Groovy: Yummy! 🍎 Energy increased!"; break;
     case 'play': energy-=5; if(energy<0)energy=0; message="Groovy: That was fun! 😄"; break;
     case 'charge': energy+=30; if(energy>100)energy=100; message="Groovy: Charging... ⚡ Energy boosted!"; break;
     case 'pet': energy+=10; if(energy>100)energy=100; message="Groovy: Yay! Thanks for the love! 💚"; break;
-    case 'joke': message="Groovy: "+responses[Math.floor(Math.random()*responses.length)]; break;
+    case 'joke': message="Groovy: "+jokes[Math.floor(Math.random()*jokes.length)]; break;
     case 'status': message=`Groovy: Energy - ${energy}%`; break;
     case 'dance':
       message="Groovy: Let's dance! 💃";
       groovy.classList.add('dance');
       setTimeout(()=>{ groovy.classList.remove('dance'); },3000);
       break;
-    case 'music':
-      message="Groovy: Playing music! 🎵";
+    case 'sleep':
+      message="Groovy: Sleeping... 😴";
+      groovy.classList.add('sleep');
+      setTimeout(()=>{ groovy.classList.remove('sleep'); },5000);
       break;
+    case 'workout':
+      energy-=10; if(energy<0)energy=0; message="Groovy: Working out! 💪 Energy down, fun up!"; break;
+    case 'bath': message="Groovy: Feeling clean and shiny! 🛁"; break;
+    case 'hug': energy+=5; if(energy>100)energy=100; message="Groovy: Aww, thanks for the hug! 🤗"; break;
     case 'light':
       message="Groovy: Lights on! 💡";
       body.style.backgroundColor = "#e0d8a8";
       setTimeout(()=>{ body.style.backgroundColor=""; },500);
+      break;
+    case 'birthday': message="Groovy: Happy Birthday! 🎂🎉"; break;
+    case 'game':
+      const num = Math.floor(Math.random()*10)+1;
+      const guess = prompt("Guess a number between 1-10:");
+      if(parseInt(guess)===num) message=`Groovy: Correct! 🎉 It was ${num}!`;
+      else message=`Groovy: Nope! 😅 It was ${num}.`;
       break;
     default: message="Groovy: Unknown action!";
   }
