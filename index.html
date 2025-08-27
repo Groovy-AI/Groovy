@@ -52,12 +52,10 @@ body {
 .bounce { animation: bounce 0.6s ease; }
 .dance { animation: dance 0.5s infinite alternate; }
 .sleep { opacity:0.5; }
-.blink { animation: blink 0.2s forwards; }
 .tilt { transform: rotate(10deg); }
 
 @keyframes bounce { 0% { transform: translateY(0); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0); } }
 @keyframes dance { 0% { transform: rotate(0deg); } 50% { transform: rotate(15deg); } 100% { transform: rotate(-15deg); } }
-@keyframes blink { 0% { filter: brightness(1); } 50% { filter: brightness(0); } 100% { filter: brightness(1); } }
 
 #output {
   background: rgba(0,0,0,0.7);
@@ -103,7 +101,7 @@ body {
 <div id="main">
 <div id="mood">🙂</div>
 <img id="groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
-<div id="output">Welcome! Groovy is online. Interact with him!</div>
+<div id="output">Loading Groovy...</div>
 </div>
 
 <script>
@@ -195,15 +193,9 @@ setInterval(()=>{
   idleAnimations();
 },10000);
 
-setInterval(()=>{
-  groovy.classList.add('blink');
-  setTimeout(()=>{ groovy.classList.remove('blink'); },200);
-},4000);
-
 // Autonomous interactions
 setInterval(() => {
     const rand = Math.random();
-    
     if(rand < 0.1){
         if(energy < 30){
             showMessage("Groovy: I'm feeling a bit tired... 😴");
@@ -213,14 +205,55 @@ setInterval(() => {
             showMessage(idleMessages[Math.floor(Math.random()*idleMessages.length)]);
         }
     }
-
     if(Math.random() < 0.2){
-        const anims = ['dance', 'tilt', 'blink'];
+        const anims = ['dance','tilt'];
         const choice = anims[Math.floor(Math.random()*anims.length)];
         groovy.classList.add(choice);
         setTimeout(()=>{ groovy.classList.remove(choice); }, 1000 + Math.random()*2000);
     }
 }, 15000 + Math.random()*5000);
+
+// Friendly reminders to interact
+setInterval(() => {
+    if(energy > 20 && happiness > 20){
+        if(Math.random() < 0.2){
+            const reminders = [
+                "Hey! Let's do something fun! 🎉",
+                "I love spending time with you! 🤗",
+                "Don't forget to pet or play with me! 💚",
+                "Feeling groovy? Let's interact! 😎",
+                "Groovy wants some attention! 🖐️"
+            ];
+            showMessage(reminders[Math.floor(Math.random()*reminders.length)]);
+            groovy.classList.add('tilt');
+            setTimeout(()=>{ groovy.classList.remove('tilt'); }, 800);
+        }
+    }
+}, 30000 + Math.random()*20000);
+
+// Detailed introduction on page load
+function intro(){
+    const introText = [
+        "🤖 Hello! My name is Groovy, your personal virtual robot companion!",
+        "I love playing, learning, and keeping you company!",
+        "You can feed me, play with me, tell jokes, dance, hug me, and more!",
+        "My birthday is on Aug 27, and I get happier when we interact!",
+        "Let's start our adventure together! 💚"
+    ];
+    let index = 0;
+    function nextMessage(){
+        if(index<introText.length){
+            output.textContent = introText[index];
+            groovy.classList.add('bounce');
+            setTimeout(()=>{ groovy.classList.remove('bounce'); },600);
+            index++;
+            setTimeout(nextMessage, 2500);
+        } else {
+            output.textContent = "Groovy is ready! Interact with him! 🙂";
+        }
+    }
+    nextMessage();
+}
 
 function interact(action){
   let message="";
@@ -263,6 +296,7 @@ document.addEventListener('mouseup', ()=>{ isDragging=false; groovy.style.cursor
 document.addEventListener('mousemove', (e)=>{ if(isDragging){ groovy.style.left=(e.clientX-offsetX)+'px'; groovy.style.top=(e.clientY-offsetY)+'px'; }});
 
 updateGroovy();
+intro();
 </script>
 
 </body>
