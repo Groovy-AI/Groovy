@@ -48,7 +48,6 @@ body {
   width:200px;
   transition: transform 0.3s;
   cursor: grab;
-  margin-bottom:20px;
   position: absolute;
   left: calc(50% - 100px);
   top: 100px;
@@ -68,6 +67,8 @@ body {
   width:60%;
   text-align:center;
   font-size:18px;
+  position: absolute;
+  bottom: 20px;
 }
 #level {
   text-align:center;
@@ -132,7 +133,6 @@ let thirst = localStorage.getItem('groovyThirst')? parseInt(localStorage.getItem
 let cleanliness = localStorage.getItem('groovyCleanliness')? parseInt(localStorage.getItem('groovyCleanliness')): 100;
 let health = 100;
 
-// Jokes and idle messages
 const jokes = [
 "Why did the robot go on vacation? He needed to recharge his batteries! 🔋",
 "What do you call a pirate robot? Arrr2-D2! 🏴‍☠️",
@@ -151,7 +151,6 @@ const idleMessages = [
 "Fun level: MAX! 🎉","Ready for adventure! 🏁"
 ];
 
-// Update Groovy stats
 function updateGroovyStats(){
   energyEl.textContent = `Energy: ${energy}%`;
   levelEl.textContent = `Level: ${level}`;
@@ -172,21 +171,17 @@ function updateGroovyStats(){
   localStorage.setItem('groovyExp', exp);
 }
 
-// Gain experience and happiness
 function gainExp(amount){ exp+=amount; if(exp>=100){ level++; exp=0; showMessage(`🎉 Groovy leveled up! Now at level ${level}!`); } }
 function gainHappiness(amount){ happiness+=amount; if(happiness>100) happiness=100; if(happiness<0) happiness=0; updateGroovyStats(); }
 
-// Show messages
 function showMessage(msg){
   output.textContent = msg;
   groovy.classList.add('bounce');
   setTimeout(()=>{ groovy.classList.remove('bounce'); },600);
 }
 
-// Idle animations
 function idleAnimations(){ if(Math.random()<0.3){ groovy.classList.add('tilt'); setTimeout(()=>{ groovy.classList.remove('tilt'); },800); } }
 
-// Periodic stat decay and idle messages
 setInterval(()=>{
   energy -=1; if(energy<0) energy=0;
   happiness -=1; if(happiness<0) happiness=0;
@@ -198,7 +193,6 @@ setInterval(()=>{
   idleAnimations();
 },10000);
 
-// Intro sequence
 function intro(){
     const introText = [
         "🤖 Hello! My name is Groovy, your personal virtual robot companion!",
