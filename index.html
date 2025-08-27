@@ -3,66 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Chatbot</title>
+<title>Groovy Virtual Pet</title>
 <style>
-  body { font-family: Arial, sans-serif; padding: 20px; }
-  #chat { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
-  #userInput { width: 80%; }
-  #sendBtn { width: 18%; }
-  .message { margin: 5px 0; }
-  .user { color: blue; }
-  .bot { color: green; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f0c27b, #4b1248);
+    color: white;
+    margin: 0;
+  }
+  h1 { font-size: 2.5rem; margin-bottom: 10px; }
+  #pet-container {
+    background: rgba(255,255,255,0.1);
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    width: 300px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  }
+  #groovy-img {
+    width: 150px;
+    margin: 10px 0;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  #buttons button {
+    margin: 5px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 12px;
+    background: #fff;
+    color: #4b1248;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  #buttons button:hover {
+    transform: scale(1.1);
+  }
+  #mood {
+    font-size: 1.2rem;
+    margin-top: 10px;
+  }
 </style>
 </head>
 <body>
-<h1>AI Chatbot</h1>
-<div id="chat"></div>
-<input type="text" id="userInput" placeholder="Type your message...">
-<button id="sendBtn">Send</button>
+
+<h1>Meet Groovy!</h1>
+<div id="pet-container">
+  <img id="groovy-img" src="https://i.imgur.com/4AiXzf8.png" alt="Groovy">
+  <p id="intro">Hi! I'm Groovy, your new virtual pet! 😎</p>
+  <div id="buttons">
+    <button onclick="interact('feed')">Feed</button>
+    <button onclick="interact('play')">Play</button>
+    <button onclick="interact('pet')">Pet</button>
+  </div>
+  <p id="mood">Mood: 😊 Happy</p>
+</div>
 
 <script>
-const chat = document.getElementById('chat');
-const userInput = document.getElementById('userInput');
-const sendBtn = document.getElementById('sendBtn');
+  let happiness = 50;
 
-const API_KEY = "YOUR_OPENAI_API_KEY"; // ⚠️ Visible to everyone
-
-sendBtn.addEventListener('click', sendMessage);
-userInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
-
-function appendMessage(sender, text) {
-  const msgDiv = document.createElement('div');
-  msgDiv.classList.add('message', sender);
-  msgDiv.textContent = text;
-  chat.appendChild(msgDiv);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-async function sendMessage() {
-  const message = userInput.value.trim();
-  if (!message) return;
-  appendMessage('user', message);
-  userInput.value = '';
-  appendMessage('bot', 'Typing...');
-
-  try {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: message }]
-      })
-    });
-    const data = await res.json();
-    chat.querySelector('.bot:last-child').textContent = data.choices[0].message.content;
-  } catch (err) {
-    chat.querySelector('.bot:last-child').textContent = 'Error: Could not get response.';
+  function updateMood() {
+    const moodEl = document.getElementById('mood');
+    if(happiness > 70) moodEl.textContent = 'Mood: 😄 Ecstatic!';
+    else if(happiness > 50) moodEl.textContent = 'Mood: 😊 Happy';
+    else if(happiness > 30) moodEl.textContent = 'Mood: 😐 Neutral';
+    else moodEl.textContent = 'Mood: 😢 Sad';
   }
-}
+
+  function interact(action) {
+    const introEl = document.getElementById('intro');
+    if(action === 'feed') {
+      happiness += 10;
+      introEl.textContent = "Yum! Thanks for the food! 🍎";
+    } else if(action === 'play') {
+      happiness += 15;
+      introEl.textContent = "Yay! I love playing! 🎾";
+    } else if(action === 'pet') {
+      happiness += 5;
+      introEl.textContent = "Aww! I love pets! 🥰";
+    }
+    if(happiness > 100) happiness = 100;
+    updateMood();
+  }
+
+  // Introduce Groovy after 2 seconds
+  setTimeout(() => {
+    document.getElementById('intro').textContent = "Hey there! I'm Groovy, let's have fun together! 😎";
+  }, 2000);
+
+  updateMood();
 </script>
+
 </body>
 </html>
