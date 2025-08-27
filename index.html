@@ -39,6 +39,10 @@ body {
   justify-content:center;
   position:relative;
 }
+#mood {
+  font-size:36px; 
+  margin-bottom:10px; 
+}
 #groovy {
   width:200px;
   transition: transform 0.3s;
@@ -63,6 +67,12 @@ body {
   text-align:center;
   font-size:18px;
 }
+#level {
+  text-align:center;
+  margin-top:10px;
+  font-weight:bold;
+  color:#fff;
+}
 </style>
 </head>
 <body>
@@ -71,6 +81,7 @@ body {
 <h2>Groovy Commands</h2>
 <img id="sidebar-groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
 <div id="energy">Energy: 100%</div>
+<div id="level">Level: 1</div>
 <ul>
   <li><button onclick="interact('feed')">Feed</button></li>
   <li><button onclick="interact('play')">Play</button></li>
@@ -90,6 +101,7 @@ body {
 </div>
 
 <div id="main">
+<div id="mood">🙂</div>
 <img id="groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
 <div id="output">Welcome! Groovy is online. Interact with him!</div>
 </div>
@@ -98,9 +110,14 @@ body {
 const groovy = document.getElementById('groovy');
 const output = document.getElementById('output');
 const energyEl = document.getElementById('energy');
+const levelEl = document.getElementById('level');
+const moodEl = document.getElementById('mood');
 const body = document.body;
 
 let energy = localStorage.getItem('groovyEnergy')? parseInt(localStorage.getItem('groovyEnergy')): 100;
+let level = localStorage.getItem('groovyLevel')? parseInt(localStorage.getItem('groovyLevel')): 1;
+let exp = localStorage.getItem('groovyExp')? parseInt(localStorage.getItem('groovyExp')): 0;
+let happiness = localStorage.getItem('groovyHappiness')? parseInt(localStorage.getItem('groovyHappiness')): 80;
 
 const jokes = [
 "Why did the robot go on vacation? He needed to recharge his batteries! 🔋",
@@ -122,12 +139,55 @@ const idleMessages = [
 
 function updateGroovy(){
   energyEl.textContent = `Energy: ${energy}%`;
+  levelEl.textContent = `Level: ${level}`;
   localStorage.setItem('groovyEnergy', energy);
+  localStorage.setItem('groovyLevel', level);
+  localStorage.setItem('groovyExp', exp);
+  localStorage.setItem('groovyHappiness', happiness);
+  updateMood();
+}
+
+function updateMood(){
+  if(happiness <= 20) moodEl.textContent = '😢';
+  else if(happiness <=50) moodEl.textContent = '😐';
+  else if(happiness <=80) moodEl.textContent = '🙂';
+  else moodEl.textContent = '😄';
+}
+
+function showMessage(msg){
+  output.textContent = msg;
+  groovy.classList.add('bounce');
+  setTimeout(()=>{ groovy.classList.remove('bounce'); },600);
+}
+
+function gainExp(amount){
+  exp += amount;
+  if(exp>=100){ 
+    level++;
+    exp = 0;
+    showMessage(`🎉 Groovy leveled up! Now at level ${level}!`);
+  }
+}
+
+function gainHappiness(amount){
+  happiness += amount;
+  if(happiness > 100) happiness = 100;
+  if(happiness < 0) happiness = 0;
+  updateMood();
+}
+
+function idleAnimations(){
+  if(Math.random()<0.3){
+    groovy.classList.add('tilt');
+    setTimeout(()=>{ groovy.classList.remove('tilt'); },800);
+  }
 }
 
 setInterval(()=>{
   energy -=1;
   if(energy<0) energy=0;
+  happiness -= 2;
+  if(happiness<0) happiness=0;
   updateGroovy();
   if(Math.random()<0.2){
     showMessage(idleMessages[Math.floor(Math.random()*idleMessages.length)]);
@@ -140,62 +200,55 @@ setInterval(()=>{
   setTimeout(()=>{ groovy.classList.remove('blink'); },200);
 },4000);
 
-function idleAnimations(){
-  if(Math.random()<0.3){
-    groovy.classList.add('tilt');
-    setTimeout(()=>{ groovy.classList.remove('tilt'); },800);
-  }
-}
+// Autonomous interactions
+setInterval(() => {
+    const rand = Math.random();
+    
+    if(rand < 0.1){
+        if(energy < 30){
+            showMessage("Groovy: I'm feeling a bit tired... 😴");
+        } else if(happiness < 30){
+            showMessage("Groovy: I need some love! 💚");
+        } else {
+            showMessage(idleMessages[Math.floor(Math.random()*idleMessages.length)]);
+        }
+    }
 
-function showMessage(msg){
-  output.textContent = msg;
-  groovy.classList.add('bounce');
-  setTimeout(()=>{ groovy.classList.remove('bounce'); },600);
-}
+    if(Math.random() < 0.2){
+        const anims = ['dance', 'tilt', 'blink'];
+        const choice = anims[Math.floor(Math.random()*anims.length)];
+        groovy.classList.add(choice);
+        setTimeout(()=>{ groovy.classList.remove(choice); }, 1000 + Math.random()*2000);
+    }
+}, 15000 + Math.random()*5000);
 
 function interact(action){
   let message="";
   switch(action){
-    case 'feed': energy+=20; if(energy>100)energy=100; message="Groovy: Yummy! 🍎 Energy increased!"; break;
-    case 'play': energy-=5; if(energy<0)energy=0; message="Groovy: That was fun! 😄"; break;
-    case 'charge': energy+=30; if(energy>100)energy=100; message="Groovy: Charging... ⚡ Energy boosted!"; break;
-    case 'pet': energy+=10; if(energy>100)energy=100; message="Groovy: Yay! Thanks for the love! 💚"; break;
-    case 'joke': message="Groovy: "+jokes[Math.floor(Math.random()*jokes.length)]; break;
-    case 'status': message=`Groovy: Energy - ${energy}%`; break;
-    case 'dance':
-      message="Groovy: Let's dance! 💃";
-      groovy.classList.add('dance');
-      setTimeout(()=>{ groovy.classList.remove('dance'); },3000);
-      break;
-    case 'sleep':
-      message="Groovy: Sleeping... 😴";
-      groovy.classList.add('sleep');
-      setTimeout(()=>{ groovy.classList.remove('sleep'); },5000);
-      break;
-    case 'workout':
-      energy-=10; if(energy<0)energy=0; message="Groovy: Working out! 💪 Energy down, fun up!"; break;
-    case 'bath': message="Groovy: Feeling clean and shiny! 🛁"; break;
-    case 'hug': energy+=5; if(energy>100)energy=100; message="Groovy: Aww, thanks for the hug! 🤗"; break;
-    case 'light':
-      message="Groovy: Lights on! 💡";
-      body.style.backgroundColor = "#e0d8a8";
-      setTimeout(()=>{ body.style.backgroundColor=""; },500);
-      break;
+    case 'feed': energy+=20; if(energy>100)energy=100; gainExp(10); gainHappiness(5); message="Groovy: Yummy! 🍎 Energy increased!"; break;
+    case 'play': energy-=5; if(energy<0)energy=0; gainExp(15); gainHappiness(15); message="Groovy: That was fun! 😄"; break;
+    case 'charge': energy+=30; if(energy>100)energy=100; gainExp(5); gainHappiness(5); message="Groovy: Charging... ⚡ Energy boosted!"; break;
+    case 'pet': energy+=10; if(energy>100)energy=100; gainExp(10); gainHappiness(10); message="Groovy: Yay! Thanks for the love! 💚"; break;
+    case 'joke': gainExp(5); gainHappiness(5); message="Groovy: "+jokes[Math.floor(Math.random()*jokes.length)]; break;
+    case 'status': message=`Groovy: Energy - ${energy}% | Level - ${level} | Happiness - ${happiness}%`; break;
+    case 'dance': gainExp(15); gainHappiness(10); message="Groovy: Let's dance! 💃"; groovy.classList.add('dance'); setTimeout(()=>{ groovy.classList.remove('dance'); },3000); break;
+    case 'sleep': message="Groovy: Sleeping... 😴"; groovy.classList.add('sleep'); setTimeout(()=>{ groovy.classList.remove('sleep'); },5000); break;
+    case 'workout': energy-=10; if(energy<0)energy=0; gainExp(20); gainHappiness(5); message="Groovy: Working out! 💪 Energy down, fun up!"; break;
+    case 'bath': gainExp(5); gainHappiness(5); message="Groovy: Feeling clean and shiny! 🛁"; break;
+    case 'hug': energy+=5; if(energy>100)energy=100; gainExp(10); gainHappiness(10); message="Groovy: Aww, thanks for the hug! 🤗"; break;
+    case 'light': message="Groovy: Lights on! 💡"; body.style.backgroundColor = "#e0d8a8"; setTimeout(()=>{ body.style.backgroundColor=""; },500); break;
     case 'birthday':
       const today = new Date();
-      if(today.getFullYear()===2025 && today.getMonth()===7 && today.getDate()===27){
-        message="🎉 Happy Birthday! Groovy is celebrating today! 🎂";
-        groovy.classList.add('dance');
-        setTimeout(()=>{ groovy.classList.remove('dance'); },5000);
-      } else {
-        message="Groovy: My birthday is on Aug 27, 2025! 🗓️"; 
-      }
+      const isBirthday = today.getMonth() === 7 && today.getDate() === 27;
+      if(isBirthday){ message="🎉 Happy Birthday! Groovy is celebrating today! 🎂"; groovy.classList.add('dance'); setTimeout(()=>{ groovy.classList.remove('dance'); },5000); }
+      else { message="Groovy: My birthday is on **Aug 27**! 🗓️"; }
       break;
     case 'game':
       const num = Math.floor(Math.random()*10)+1;
       const guess = prompt("Guess a number between 1-10:");
       if(parseInt(guess)===num) message=`Groovy: Correct! 🎉 It was ${num}!`;
       else message=`Groovy: Nope! 😅 It was ${num}.`;
+      gainExp(10); gainHappiness(5);
       break;
     default: message="Groovy: Unknown action!";
   }
@@ -205,25 +258,9 @@ function interact(action){
 
 // Drag functionality
 let isDragging = false, offsetX, offsetY;
-
-groovy.addEventListener('mousedown', (e)=>{
-  isDragging = true;
-  offsetX = e.clientX - groovy.offsetLeft;
-  offsetY = e.clientY - groovy.offsetTop;
-  groovy.style.cursor = 'grabbing';
-});
-
-document.addEventListener('mouseup', ()=>{
-  isDragging = false;
-  groovy.style.cursor = 'grab';
-});
-
-document.addEventListener('mousemove', (e)=>{
-  if(isDragging){
-    groovy.style.left = (e.clientX - offsetX) + 'px';
-    groovy.style.top = (e.clientY - offsetY) + 'px';
-  }
-});
+groovy.addEventListener('mousedown', (e)=>{ isDragging=true; offsetX=e.clientX-groovy.offsetLeft; offsetY=e.clientY-groovy.offsetTop; groovy.style.cursor='grabbing'; });
+document.addEventListener('mouseup', ()=>{ isDragging=false; groovy.style.cursor='grab'; });
+document.addEventListener('mousemove', (e)=>{ if(isDragging){ groovy.style.left=(e.clientX-offsetX)+'px'; groovy.style.top=(e.clientY-offsetY)+'px'; }});
 
 updateGroovy();
 </script>
