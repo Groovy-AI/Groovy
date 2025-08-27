@@ -1,118 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hacker Simulator</title>
-<style>
-  body {
-    margin: 0;
-    background: black;
-    color: #00ff00;
-    font-family: 'Courier New', monospace;
-    overflow: hidden;
-  }
-  #matrix {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-  #console {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    font-size: 1.2rem;
-    width: 95%;
-  }
-  .progress-bar {
-    background: #222;
-    border: 1px solid #00ff00;
-    width: 100%;
-    height: 20px;
-    margin-top: 10px;
-  }
-  .progress {
-    background: #00ff00;
-    width: 0%;
-    height: 100%;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Groovy Commands</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background: #111;
+      color: #0f0;
+      display: flex;
+    }
+    #sidebar {
+      width: 200px;
+      background: #222;
+      padding: 20px;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+    }
+    #sidebar img {
+      width: 100%;
+      border-radius: 10px;
+    }
+    #sidebar h2 {
+      text-align: center;
+      color: #fff;
+    }
+    #sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    #sidebar li {
+      margin: 10px 0;
+    }
+    #sidebar li button {
+      width: 100%;
+      padding: 10px;
+      background: #444;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #sidebar li button:hover {
+      background: #666;
+    }
+    #output {
+      margin-left: 220px;
+      padding: 20px;
+      width: calc(100% - 220px);
+      height: 100vh;
+      overflow-y: auto;
+      background: #000;
+      color: #0f0;
+    }
+  </style>
 </head>
 <body>
 
-<canvas id="matrix"></canvas>
-<div id="console">
-  <p id="status">Initializing Hack Simulator...</p>
-  <div class="progress-bar"><div class="progress" id="progress"></div></div>
-</div>
+  <div id="sidebar">
+    <h2>Groovy Commands</h2>
+    <img src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy the Robot">
+    <ul>
+      <li><button onclick="executeCommand('hello')">Hello</button></li>
+      <li><button onclick="executeCommand('dance')">Dance</button></li>
+      <li><button onclick="executeCommand('joke')">Tell a Joke</button></li>
+      <li><button onclick="executeCommand('status')">Status</button></li>
+      <li><button onclick="executeCommand('feed')">Feed</button></li>
+      <li><button onclick="executeCommand('play')">Play</button></li>
+      <li><button onclick="executeCommand('shutdown')">Shutdown</button></li>
+      <li><button onclick="executeCommand('music')">Play Music</button></li>
+      <li><button onclick="executeCommand('upgrade')">Upgrade</button></li>
+      <li><button onclick="executeCommand('help')">Help</button></li>
+    </ul>
+  </div>
 
-<script>
-// MATRIX ANIMATION
-const canvas = document.getElementById('matrix');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+  <div id="output">
+    <p>Welcome to Groovy's Command Center! Type a command from the list on the left.</p>
+  </div>
 
-const letters = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const fontSize = 16;
-const columns = Math.floor(canvas.width / fontSize);
-const drops = [];
-for (let x = 0; x < columns; x++) drops[x] = Math.random() * canvas.height;
+  <script>
+    const output = document.getElementById('output');
 
-function drawMatrix() {
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#00ff00';
-  ctx.font = fontSize + 'px Courier';
-  for (let i = 0; i < drops.length; i++) {
-    const text = letters.charAt(Math.floor(Math.random() * letters.length));
-    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-      drops[i] = 0;
+    const jokes = [
+      "Why did the robot go to school? Because its skills were rusty! 🤖",
+      "I'm reading a book on anti-gravity. It's impossible to put down! 📚",
+      "Why did the robot eat a light bulb? It wanted a light snack! 💡"
+    ];
+
+    function executeCommand(command) {
+      switch(command) {
+        case 'hello':
+          output.innerHTML = "<p>Groovy: Hello, human! 😎</p>";
+          break;
+        case 'dance':
+          output.innerHTML = "<p>Groovy: Let's dance! 💃</p>";
+          break;
+        case 'joke':
+          output.innerHTML = `<p>Groovy: ${jokes[Math.floor(Math.random() * jokes.length)]}</p>`;
+          break;
+        case 'status':
+          output.innerHTML = "<p>Groovy: I'm feeling groovy! Battery at 100%.</p>";
+          break;
+        case 'feed':
+          output.innerHTML = "<p>Groovy: Yum! Thanks for the snack. 🍕</p>";
+          break;
+        case 'play':
+          output.innerHTML = "<p>Groovy: Let's play a game! 🎮</p>";
+          break;
+        case 'shutdown':
+          output.innerHTML = "<p>Groovy: Shutting down... Goodbye! 💾</p>";
+          break;
+        case 'music':
+          output.innerHTML = "<p>Groovy: Playing some funky beats! 🎵</p>";
+          break;
+        case 'upgrade':
+          output.innerHTML = "<p>Groovy: Upgrading system... 🔧</p>";
+          break;
+        case 'help':
+          output.innerHTML = `
+            <p>Available commands:</p>
+            <ul>
+              <li><strong>hello</strong>: Groovy greets you.</li>
+              <li><strong>dance</strong>: Groovy shows a dance move.</li>
+              <li><strong>joke</strong>: Groovy tells a random joke.</li>
+              <li><strong>status</strong>: Check Groovy's status.</li>
+              <li><strong>feed</strong>: Feed Groovy some energy.</li>
+              <li><strong>play</strong>: Play a mini-game with Groovy.</li>
+              <li><strong>shutdown</strong>: Turn off Groovy.</li>
+              <li><strong>music</strong>: Play music with Groovy.</li>
+              <li><strong>upgrade</strong>: Upgrade Groovy's system.</li>
+            </ul>
+          `;
+          break;
+        default:
+          output.innerHTML = "<p>Groovy: Unknown command. Type 'help' for a list of commands.</p>";
+      }
     }
-    drops[i]++;
-  }
-}
-setInterval(drawMatrix, 50);
-
-// FAKE HACKING PROGRESS
-let progress = 0;
-const statusEl = document.getElementById('status');
-const progressEl = document.getElementById('progress');
-
-const messages = [
-  'Connecting to mainframe...',
-  'Bypassing firewall...',
-  'Cracking password...',
-  'Accessing secret files...',
-  'Downloading data...',
-  'Injecting virus...',
-  'Admin privileges granted!'
-];
-
-function fakeHack() {
-  if (progress < 100) {
-    progress += Math.random() * 5;
-    if (progress > 100) progress = 100;
-    progressEl.style.width = progress + '%';
-
-    const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-    statusEl.textContent = randomMsg;
-    setTimeout(fakeHack, 500);
-  } else {
-    statusEl.textContent = 'HACK COMPLETE! 💻';
-  }
-}
-setTimeout(fakeHack, 1000);
-
-// OPTIONAL: Key press effects
-document.addEventListener('keydown', e => {
-  const keyMsg = `Command executed: ${e.key}`;
-  statusEl.textContent = keyMsg;
-});
-</script>
+  </script>
 
 </body>
 </html>
