@@ -42,26 +42,19 @@ body {
 #groovy {
   width:200px;
   transition: transform 0.3s;
+  position: absolute;
+  cursor: grab;
 }
-.bounce {
-  animation: bounce 0.6s ease;
-}
-.dance {
-  animation: dance 0.5s infinite alternate;
-}
-.sleep {
-  opacity:0.5;
-}
-@keyframes bounce {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-15px); }
-  100% { transform: translateY(0); }
-}
-@keyframes dance {
-  0% { transform: rotate(0deg); }
-  50% { transform: rotate(15deg); }
-  100% { transform: rotate(-15deg); }
-}
+.bounce { animation: bounce 0.6s ease; }
+.dance { animation: dance 0.5s infinite alternate; }
+.sleep { opacity:0.5; }
+.blink { animation: blink 0.2s forwards; }
+.tilt { transform: rotate(10deg); }
+
+@keyframes bounce { 0% { transform: translateY(0); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0); } }
+@keyframes dance { 0% { transform: rotate(0deg); } 50% { transform: rotate(15deg); } 100% { transform: rotate(-15deg); } }
+@keyframes blink { 0% { filter: brightness(1); } 50% { filter: brightness(0); } 100% { filter: brightness(1); } }
+
 #output {
   background: rgba(0,0,0,0.7);
   padding:15px;
@@ -139,7 +132,20 @@ setInterval(()=>{
   if(Math.random()<0.2){
     showMessage(idleMessages[Math.floor(Math.random()*idleMessages.length)]);
   }
+  idleAnimations();
 },10000);
+
+setInterval(()=>{
+  groovy.classList.add('blink');
+  setTimeout(()=>{ groovy.classList.remove('blink'); },200);
+},4000);
+
+function idleAnimations(){
+  if(Math.random()<0.3){
+    groovy.classList.add('tilt');
+    setTimeout(()=>{ groovy.classList.remove('tilt'); },800);
+  }
+}
 
 function showMessage(msg){
   output.textContent = msg;
@@ -175,7 +181,16 @@ function interact(action){
       body.style.backgroundColor = "#e0d8a8";
       setTimeout(()=>{ body.style.backgroundColor=""; },500);
       break;
-    case 'birthday': message="Groovy: Happy Birthday! 🎂🎉"; break;
+    case 'birthday':
+      const today = new Date();
+      if(today.getFullYear()===2025 && today.getMonth()===7 && today.getDate()===27){
+        message="🎉 Happy Birthday! Groovy is celebrating today! 🎂";
+        groovy.classList.add('dance');
+        setTimeout(()=>{ groovy.classList.remove('dance'); },5000);
+      } else {
+        message="Groovy: My birthday is on Aug 27, 2025! 🗓️"; 
+      }
+      break;
     case 'game':
       const num = Math.floor(Math.random()*10)+1;
       const guess = prompt("Guess a number between 1-10:");
@@ -187,6 +202,28 @@ function interact(action){
   showMessage(message);
   updateGroovy();
 }
+
+// Drag functionality
+let isDragging = false, offsetX, offsetY;
+
+groovy.addEventListener('mousedown', (e)=>{
+  isDragging = true;
+  offsetX = e.clientX - groovy.offsetLeft;
+  offsetY = e.clientY - groovy.offsetTop;
+  groovy.style.cursor = 'grabbing';
+});
+
+document.addEventListener('mouseup', ()=>{
+  isDragging = false;
+  groovy.style.cursor = 'grab';
+});
+
+document.addEventListener('mousemove', (e)=>{
+  if(isDragging){
+    groovy.style.left = (e.clientX - offsetX) + 'px';
+    groovy.style.top = (e.clientY - offsetY) + 'px';
+  }
+});
 
 updateGroovy();
 </script>
