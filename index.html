@@ -36,8 +36,9 @@ body {
   display:flex;
   flex-direction:column;
   align-items:center;
-  justify-content:center;
+  justify-content:flex-start; /* content stacks from top */
   position:relative;
+  padding-top:50px; /* space from top */
 }
 #mood {
   font-size:36px; 
@@ -46,8 +47,9 @@ body {
 #groovy {
   width:200px;
   transition: transform 0.3s;
-  position: absolute;
   cursor: grab;
+  margin-bottom:20px; /* space between image and text */
+  position: relative; 
 }
 .bounce { animation: bounce 0.6s ease; }
 .dance { animation: dance 0.5s infinite alternate; }
