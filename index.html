@@ -19,6 +19,7 @@
     width:250px;
     background: rgba(34,34,34,0.9);
     padding:20px;
+    overflow-y:auto;
   }
   #sidebar h2 { text-align:center; color:#fff; }
   #sidebar img { width:100%; border-radius:10px; margin-bottom:10px; }
@@ -27,6 +28,7 @@
   #sidebar button {
     width:100%; padding:10px; background:#444; color:#fff;
     border:none; border-radius:5px; cursor:pointer; text-align:left;
+    margin-bottom:5px;
   }
   #sidebar button:hover { background:#666; }
   #main {
@@ -44,10 +46,18 @@
   .bounce {
     animation: bounce 0.6s ease;
   }
+  .dance {
+    animation: dance 0.5s infinite alternate;
+  }
   @keyframes bounce {
     0% { transform: translateY(0); }
     50% { transform: translateY(-15px); }
     100% { transform: translateY(0); }
+  }
+  @keyframes dance {
+    0% { transform: rotate(0deg); }
+    50% { transform: rotate(15deg); }
+    100% { transform: rotate(-15deg); }
   }
   #output {
     background: rgba(0,0,0,0.7);
@@ -72,6 +82,9 @@
     <li><button onclick="interact('pet')">Pet</button></li>
     <li><button onclick="interact('joke')">Tell a Joke</button></li>
     <li><button onclick="interact('status')">Status</button></li>
+    <li><button onclick="interact('dance')">Dance</button></li>
+    <li><button onclick="interact('music')">Play Music</button></li>
+    <li><button onclick="interact('light')">Turn on Lights</button></li>
   </ul>
 </div>
 
@@ -85,6 +98,7 @@ const groovy = document.getElementById('groovy');
 const sidebarImg = document.getElementById('sidebar-groovy');
 const output = document.getElementById('output');
 const energyEl = document.getElementById('energy');
+const body = document.body;
 
 let energy = localStorage.getItem('groovyEnergy')? parseInt(localStorage.getItem('groovyEnergy')): 100;
 
@@ -118,15 +132,14 @@ setInterval(()=>{
   idleMessage();
 },10000);
 
-// Show only current message
 function showMessage(msg){
   output.textContent = msg;
-  // Small bounce animation on new message
+  // Bounce on new message
   groovy.classList.add('bounce');
   setTimeout(()=>{ groovy.classList.remove('bounce'); },600);
 }
 
-// Random idle message
+// Idle messages
 function idleMessage(){
   if(Math.random()<0.2){
     const msg = responses[Math.floor(Math.random()*responses.length)];
@@ -134,6 +147,7 @@ function idleMessage(){
   }
 }
 
+// Interactions
 function interact(action){
   let message = "";
   switch(action){
@@ -143,6 +157,19 @@ function interact(action){
     case 'pet': energy+=10; if(energy>100)energy=100; message="Groovy: Yay! Thanks for the love! 💚"; break;
     case 'joke': message="Groovy: "+responses[Math.floor(Math.random()*responses.length)]; break;
     case 'status': message=`Groovy: Energy - ${energy}%`; break;
+    case 'dance':
+      message="Groovy: Let's dance! 💃";
+      groovy.classList.add('dance');
+      setTimeout(()=>{ groovy.classList.remove('dance'); },3000);
+      break;
+    case 'music':
+      message="Groovy: Playing music! 🎵";
+      break;
+    case 'light':
+      message="Groovy: Lights on! 💡";
+      body.style.backgroundColor = "#e0d8a8";
+      setTimeout(()=>{ body.style.backgroundColor=""; },500);
+      break;
     default: message="Groovy: Unknown action!";
   }
   showMessage(message);
