@@ -36,9 +36,9 @@ body {
   display:flex;
   flex-direction:column;
   align-items:center;
-  justify-content:flex-start; /* content stacks from top */
+  justify-content:flex-start;
   position:relative;
-  padding-top:50px; /* space from top */
+  padding-top:50px;
 }
 #mood {
   font-size:36px; 
@@ -48,8 +48,10 @@ body {
   width:200px;
   transition: transform 0.3s;
   cursor: grab;
-  margin-bottom:20px; /* space between image and text */
-  position: relative; 
+  margin-bottom:20px;
+  position: absolute; /* changed from relative to absolute for proper dragging */
+  left: calc(50% - 100px); /* center horizontally */
+  top: 100px; /* initial vertical position */
 }
 .bounce { animation: bounce 0.6s ease; }
 .dance { animation: dance 0.5s infinite alternate; }
@@ -195,27 +197,7 @@ setInterval(()=>{
   idleAnimations();
 },10000);
 
-// Autonomous interactions
-setInterval(() => {
-    const rand = Math.random();
-    if(rand < 0.1){
-        if(energy < 30){
-            showMessage("Groovy: I'm feeling a bit tired... 😴");
-        } else if(happiness < 30){
-            showMessage("Groovy: I need some love! 💚");
-        } else {
-            showMessage(idleMessages[Math.floor(Math.random()*idleMessages.length)]);
-        }
-    }
-    if(Math.random() < 0.2){
-        const anims = ['dance','tilt'];
-        const choice = anims[Math.floor(Math.random()*anims.length)];
-        groovy.classList.add(choice);
-        setTimeout(()=>{ groovy.classList.remove(choice); }, 1000 + Math.random()*2000);
-    }
-}, 15000 + Math.random()*5000);
-
-// Friendly reminders to interact
+// Friendly reminders
 setInterval(() => {
     if(energy > 20 && happiness > 20){
         if(Math.random() < 0.2){
@@ -233,7 +215,7 @@ setInterval(() => {
     }
 }, 30000 + Math.random()*20000);
 
-// Detailed introduction on page load
+// Intro messages
 function intro(){
     const introText = [
         "🤖 Hello! My name is Groovy, your personal virtual robot companion!",
@@ -257,6 +239,7 @@ function intro(){
     nextMessage();
 }
 
+// Interactions
 function interact(action){
   let message="";
   switch(action){
@@ -276,7 +259,7 @@ function interact(action){
       const today = new Date();
       const isBirthday = today.getMonth() === 7 && today.getDate() === 27;
       if(isBirthday){ message="🎉 Happy Birthday! Groovy is celebrating today! 🎂"; groovy.classList.add('dance'); setTimeout(()=>{ groovy.classList.remove('dance'); },5000); }
-      else { message="Groovy: My birthday is on **Aug 27**! 🗓️"; }
+      else { message="Groovy: My birthday is on Aug 27! 🗓️"; }
       break;
     case 'game':
       const num = Math.floor(Math.random()*10)+1;
@@ -291,11 +274,24 @@ function interact(action){
   updateGroovy();
 }
 
-// Drag functionality
-let isDragging = false, offsetX, offsetY;
-groovy.addEventListener('mousedown', (e)=>{ isDragging=true; offsetX=e.clientX-groovy.offsetLeft; offsetY=e.clientY-groovy.offsetTop; groovy.style.cursor='grabbing'; });
-document.addEventListener('mouseup', ()=>{ isDragging=false; groovy.style.cursor='grab'; });
-document.addEventListener('mousemove', (e)=>{ if(isDragging){ groovy.style.left=(e.clientX-offsetX)+'px'; groovy.style.top=(e.clientY-offsetY)+'px'; }});
+// Dragging properly from mouse
+let isDragging = false, offsetX=0, offsetY=0;
+groovy.addEventListener('mousedown', (e)=>{
+  isDragging = true;
+  offsetX = e.clientX - groovy.offsetLeft;
+  offsetY = e.clientY - groovy.offsetTop;
+  groovy.style.cursor = 'grabbing';
+});
+document.addEventListener('mouseup', ()=>{
+  isDragging = false;
+  groovy.style.cursor = 'grab';
+});
+document.addEventListener('mousemove', (e)=>{
+  if(isDragging){
+    groovy.style.left = (e.clientX - offsetX) + 'px';
+    groovy.style.top = (e.clientY - offsetY) + 'px';
+  }
+});
 
 updateGroovy();
 intro();
