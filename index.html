@@ -69,7 +69,7 @@ body {
   text-align:center;
   font-size:18px;
   position: absolute;
-  bottom: 20px;
+  bottom: 80px; /* moved higher for mobile */
 }
 #level {
   text-align:center;
@@ -184,12 +184,10 @@ function showMessage(msg){
 
 function idleAnimations(){ if(Math.random()<0.3){ groovy.classList.add('tilt'); setTimeout(()=>{ groovy.classList.remove('tilt'); },800); } }
 
-// Death message with restart button
 function showDeathMessage(){
   output.innerHTML = "💀 Groovy died!<br><button class='restart' onclick='restartGame()'>Restart</button>";
 }
 
-// Restart function
 function restartGame(){
   battery = 100;
   happiness = 80;
@@ -201,7 +199,6 @@ function restartGame(){
   intro();
 }
 
-// Idle battery drain
 setInterval(()=>{
   if(dead) return;
   battery -=1; if(battery<0) battery=0;
@@ -211,7 +208,6 @@ setInterval(()=>{
   idleAnimations();
 },10000);
 
-// Intro
 function intro(){
     const introText = [
         "🤖 Hello! My name is Groovy, your personal virtual robot companion!",
@@ -248,6 +244,8 @@ function interact(action){
     case 'pet': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(10); message="Groovy: Yay! Thanks! 💚"; break;
     case 'dance': gainExp(15); gainHappiness(10); message="Groovy: Let's dance! 💃"; groovy.classList.add('dance'); setTimeout(()=>{ groovy.classList.remove('dance'); },3000); break;
     case 'sleep': message="Groovy: Sleeping... 😴"; groovy.classList.add('sleep'); setTimeout(()=>{ groovy.classList.remove('sleep'); },5000); break;
+    case 'workout': battery-=10; if(battery<0) battery=0; gainExp(20); gainHappiness(5); message="Groovy: Working out! 💪"; break;
+    case 'bath': gainExp(5); gainHappiness(5); message="Groovy: Feeling clean and shiny! 🛁"; break;
     case 'hug': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(10); message="Groovy: Aww, thanks! 🤗"; break;
     case 'joke': gainExp(5); gainHappiness(5); message="Groovy: "+jokes[Math.floor(Math.random()*jokes.length)]; break;
     case 'birthday': const today=new Date(); const isBirthday=today.getMonth()===7 && today.getDate()===27; if(isBirthday){ message="🎉 Happy Birthday! Groovy is celebrating today! 🎂"; groovy.classList.add('dance'); setTimeout(()=>{ groovy.classList.remove('dance'); },5000); } else { message="Groovy: My birthday is on Aug 27! 🗓️"; } break;
