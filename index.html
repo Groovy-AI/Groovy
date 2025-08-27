@@ -3,220 +3,224 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Groovy the Robot</title>
+<title>Groovy Virtual Pet</title>
 <style>
-  body {
-    font-family: 'Courier New', monospace;
-    margin: 0;
-    display: flex;
-    background: #111;
-    color: #0f0;
-    height: 100vh;
-  }
-  #sidebar {
-    width: 250px;
-    background: #222;
-    padding: 20px;
-    overflow-y: auto;
-  }
-  #sidebar img {
-    width: 100%;
-    border-radius: 10px;
-    margin-bottom: 10px;
-  }
-  #sidebar h2 {
-    text-align: center;
-    color: #fff;
-  }
-  #sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  #sidebar li {
-    margin: 5px 0;
-  }
-  #sidebar li button {
-    width: 100%;
-    padding: 10px;
-    background: #444;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    text-align: left;
-  }
-  #sidebar li button:hover {
-    background: #666;
-  }
-  #output {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    background: #000;
-  }
-  .groovy-animate {
-    display: inline-block;
-    animation: dance 0.5s infinite alternate;
-  }
-  @keyframes dance {
-    0% { transform: rotate(0deg); }
-    50% { transform: rotate(15deg); }
-    100% { transform: rotate(-15deg); }
-  }
-  #energy {
-    margin-top: 10px;
-    font-size: 0.9rem;
-  }
+body {
+  margin:0;
+  font-family:'Courier New', monospace;
+  background: url('https://cdna.artstation.com/p/assets/images/images/048/816/921/original/marko-djurdjevic-homerobotfinal.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color: #0f0;
+  display:flex;
+  height:100vh;
+  overflow:hidden;
+}
+#sidebar {
+  width:250px;
+  background:#222;
+  padding:20px;
+  overflow-y:auto;
+}
+#sidebar h2 { text-align:center; color:#fff; }
+#sidebar img { width:100%; border-radius:10px; margin-bottom:10px; }
+#sidebar ul { list-style:none; padding:0; margin:0; }
+#sidebar li { margin:5px 0; }
+#sidebar button {
+  width:100%; padding:10px; background:#444; color:#fff;
+  border:none; border-radius:5px; cursor:pointer; text-align:left;
+}
+#sidebar button:hover { background:#666; }
+#main {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+#groovy {
+  width:200px;
+  transition: transform 0.3s;
+}
+#output {
+  background: rgba(0,0,0,0.7);
+  padding:10px;
+  border-radius:10px;
+  max-height:150px;
+  width:60%;
+  overflow-y:auto;
+  margin-top:10px;
+}
+.animate-dance { animation: dance 0.5s infinite alternate; }
+@keyframes dance { 0%{transform:rotate(0deg);}50%{transform:rotate(15deg);}100%{transform:rotate(-15deg);} }
+#modal {
+  display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); color:#0f0; z-index:10; flex-direction:column; align-items:center; justify-content:center;
+}
+#modal button { margin-top:10px; }
 </style>
 </head>
 <body>
 
 <div id="sidebar">
   <h2>Groovy Commands</h2>
-  <img id="groovy-img" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy the Robot">
-  <div id="energy">Energy: 100%</div>
-  <ul id="commandList">
+  <img id="sidebar-groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
+  <div id="energy">Energy: 100% | Mood: 😊 Happy</div>
+  <ul>
     <li><button onclick="interact('feed')">Feed</button></li>
     <li><button onclick="interact('play')">Play</button></li>
     <li><button onclick="interact('dance')">Dance</button></li>
     <li><button onclick="interact('joke')">Tell a Joke</button></li>
     <li><button onclick="interact('charge')">Charge</button></li>
+    <li><button onclick="interact('pet')">Pet</button></li>
     <li><button onclick="interact('status')">Status</button></li>
+    <li><button onclick="interact('minigame')">Play Mini-Game</button></li>
   </ul>
 </div>
 
-<div id="output">
-  <p>Welcome! Groovy is online. Click a command to interact.</p>
+<div id="main">
+  <img id="groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
+  <div id="output"><p>Welcome! Groovy is online. Interact with him!</p></div>
+</div>
+
+<div id="modal" style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+  <div id="game-content"></div>
+  <button onclick="closeGame()">Close</button>
 </div>
 
 <script>
+const groovy = document.getElementById('groovy');
+const sidebarImg = document.getElementById('sidebar-groovy');
 const output = document.getElementById('output');
-const groovyImg = document.getElementById('groovy-img');
 const energyEl = document.getElementById('energy');
+const modal = document.getElementById('modal');
+const gameContent = document.getElementById('game-content');
 
-let energy = 100; // 0-100%
+let energy = localStorage.getItem('groovyEnergy')? parseInt(localStorage.getItem('groovyEnergy')): 100;
 let mood = "😊 Happy";
 
-// Images
 const images = {
-  happy: "https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png",
-  medium: "https://img.freepik.com/free-vector/ai-technology-robot-cyborg-illustrations_128561063.jpg",
-  low: "https://img.freepik.com/premium-psd/3d-render-cute-robot-with-hand-gesture_224139473.jpg"
+  happy:"https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png",
+  medium:"https://img.freepik.com/free-vector/ai-technology-robot-cyborg-illustrations_128561063.jpg",
+  low:"https://img.freepik.com/premium-psd/3d-render-cute-robot-with-hand-gesture_224139473.jpg"
 };
 
-// 50+ Responses
 const responses = [
-  "Hey there! 🤖",
-  "Groovy is ready to party! 🎉",
-  "Beep boop! I'm groovy! 💚",
-  "Did you know robots dream of electric sheep? 🐑",
-  "I feel fantastic today! 😎",
-  "Let's dance! 💃",
-  "Tell me a joke and I'll laugh! 😂",
-  "Processing your awesomeness... ✅",
-  "Groovy loves interacting with humans! 🖐️",
-  "Warning: too much fun may overload circuits! ⚡",
-  "I am 99% charged and 100% happy!",
-  "Groovy's circuits are buzzing with joy! 🌀",
-  "Have you fed me today? 🍎",
-  "Let's play a game! 🎮",
-  "I am your robotic companion. 🤖",
-  "Charging up my happiness! 🔋",
-  "Beep beep beep! I'm dancing! 💃",
-  "I know 50 jokes, ask me! 😏",
-  "Calculating the meaning of life... done! 😉",
-  "Groovy loves coding! 💻",
-  "I am feeling groovy! 🟢",
-  "Let's have some fun together! 🎈",
-  "Beep! Energy stable. ✅",
-  "I can spin around! 🌀",
-  "Battery low? Time to recharge! 🔋",
-  "I am medium energized. 😐",
-  "Feeling a little sleepy... 😴",
-  "Hello human! 😎",
-  "Fun mode activated! 🎉",
-  "Groovy loves music! 🎵",
-  "Let's hack the fun matrix! 💻",
-  "Warning: Tired circuits ahead! ⚠️",
-  "I'm grooving to your commands! 💃",
-  "Feeling super energetic today! ⚡",
-  "Beep boop! Executing fun protocol!",
-  "System stable. 😊",
-  "Let's solve a puzzle together! 🧩",
-  "Groovy likes to sing! 🎤",
-  "Dance party mode on! 💃🕺",
-  "Beep boop! I am ready! ✅",
-  "Charging my imagination! 💡",
-  "I love robotic hugs! 🤗",
-  "Groovy can tell you a secret! 🤫",
-  "Circuitry is sparkling today! ✨",
-  "Energy levels optimal. 😎",
-  "Groovy says hi to everyone! 👋",
-  "Fun level: MAX! 🎉",
-  "Ready for adventure! 🏁",
-  "I am feeling groovy and happy! 😄",
-  "Beep beep! Let's rock! 🎸",
-  "Time to play and laugh! 😂",
-  "Groovy loves exploring new commands! 🧭",
-  "I am fully operational! ✅"
+"Hey there! 🤖","Groovy is ready to party! 🎉","Beep boop! I'm groovy! 💚","Did you know robots dream of electric sheep? 🐑",
+"I feel fantastic today! 😎","Let's dance! 💃","Tell me a joke and I'll laugh! 😂","Processing your awesomeness... ✅",
+"Groovy loves interacting with humans! 🖐️","Warning: too much fun may overload circuits! ⚡","I am 99% charged and 100% happy!",
+"Groovy's circuits are buzzing with joy! 🌀","Have you fed me today? 🍎","Let's play a game! 🎮","I am your robotic companion. 🤖",
+"Charging up my happiness! 🔋","Beep beep beep! I'm dancing! 💃","I know 50 jokes, ask me! 😏","Calculating the meaning of life... done! 😉",
+"Groovy loves coding! 💻","I am feeling groovy! 🟢","Let's have some fun together! 🎈","Beep! Energy stable. ✅",
+"I can spin around! 🌀","Battery low? Time to recharge! 🔋","I am medium energized. 😐","Feeling a little sleepy... 😴",
+"Hello human! 😎","Fun mode activated! 🎉","Groovy loves music! 🎵","Let's hack the fun matrix! 💻",
+"Warning: Tired circuits ahead! ⚠️","I'm grooving to your commands! 💃","Feeling super energetic today! ⚡","Beep boop! Executing fun protocol!",
+"System stable. 😊","Let's solve a puzzle together! 🧩","Groovy likes to sing! 🎤","Dance party mode on! 💃🕺",
+"Beep boop! I am ready! ✅","Charging my imagination! 💡","I love robotic hugs! 🤗","Groovy can tell you a secret! 🤫",
+"Circuitry is sparkling today! ✨","Energy levels optimal. 😎","Groovy says hi to everyone! 👋","Fun level: MAX! 🎉",
+"Ready for adventure! 🏁","I am feeling groovy and happy! 😄","Beep beep! Let's rock! 🎸","Time to play and laugh! 😂",
+"Groovy loves exploring new commands! 🧭","I am fully operational! ✅"
 ];
 
-// Decrease energy over time
-setInterval(() => {
-  energy -= 1;
-  if(energy < 0) energy = 0;
-  updateGroovy();
-}, 10000); // decreases 1% every 10 seconds
-
 function updateGroovy(){
-  // Update image
-  if(energy > 60) groovyImg.src = images.happy;
-  else if(energy > 20) groovyImg.src = images.medium;
-  else groovyImg.src = images.low;
-
-  // Update mood
-  if(energy > 60) mood = "😊 Happy";
-  else if(energy > 20) mood = "😐 Neutral";
-  else mood = "😢 Low";
-
+  if(energy>60){ groovy.src=images.happy; sidebarImg.src=images.happy; mood="😊 Happy";}
+  else if(energy>20){ groovy.src=images.medium; sidebarImg.src=images.medium; mood="😐 Neutral";}
+  else{ groovy.src=images.low; sidebarImg.src=images.low; mood="😢 Low";}
   energyEl.textContent = `Energy: ${energy}% | Mood: ${mood}`;
+  localStorage.setItem('groovyEnergy', energy);
 }
 
-// Interactions
+setInterval(()=>{
+  energy -=1;
+  if(energy<0) energy=0;
+  updateGroovy();
+  randomIdleMessage();
+},10000);
+
+function randomIdleMessage(){
+  if(Math.random()<0.3){
+    const msg = responses[Math.floor(Math.random()*responses.length)];
+    output.innerHTML += `<p>${msg}</p>`;
+    output.scrollTop = output.scrollHeight;
+  }
+}
+
 function interact(action){
   let message = "";
   switch(action){
-    case 'feed':
-      energy += 20; if(energy>100) energy=100;
-      message = "Groovy: Yummy! Energy increased 🍎";
-      break;
-    case 'play':
-      energy -= 5; if(energy<0) energy=0;
-      message = "Groovy: That was fun! 😄";
-      break;
-    case 'dance':
-      message = "Groovy: Let's dance! 💃 <span class='groovy-animate'>🤖</span>";
-      break;
-    case 'joke':
-      message = "Groovy: " + responses[Math.floor(Math.random()*responses.length)];
-      break;
-    case 'charge':
-      energy += 30; if(energy>100) energy=100;
-      message = "Groovy: Charging... ⚡ Energy boosted!";
-      break;
-    case 'status':
-      message = `Groovy: Mood - ${mood}, Energy - ${energy}%`;
-      break;
-    default:
-      message = "Groovy: Unknown action!";
+    case 'feed': energy+=20; if(energy>100)energy=100; message="Groovy: Yummy! 🍎 Energy increased!"; break;
+    case 'play': energy-=5; if(energy<0)energy=0; message="Groovy: That was fun! 😄"; break;
+    case 'dance': message="Groovy: Let's dance! 💃 <span class='animate-dance'>🤖</span>"; break;
+    case 'joke': message="Groovy: "+responses[Math.floor(Math.random()*responses.length)]; break;
+    case 'charge': energy+=30; if(energy>100)energy=100; message="Groovy: Charging... ⚡ Energy boosted!"; break;
+    case 'pet': energy+=10; if(energy>100)energy=100; message="Groovy: Yay! Thanks for the love! 💚"; break;
+    case 'status': message=`Groovy: Mood - ${mood}, Energy - ${energy}%`; break;
+    case 'minigame': startMiniGame(); return;
+    default: message="Groovy: Unknown action!";
   }
   output.innerHTML += `<p>${message}</p>`;
   output.scrollTop = output.scrollHeight;
   updateGroovy();
+  if(action==='dance'){ groovy.classList.add('animate-dance'); setTimeout(()=>{groovy.classList.remove('animate-dance');},3000);}
 }
 
-// Initial update
+// Mini-Game System
+function startMiniGame(){
+  modal.style.display="flex";
+  gameContent.innerHTML = `
+    <h2>Choose a Mini-Game</h2>
+    <button onclick="clickerGame()">Clicker Game</button>
+    <button onclick="danceGame()">Dance Game</button>
+    <button onclick="typingGame()">Typing Fun</button>
+  `;
+}
+
+function closeGame(){ modal.style.display="none"; updateGroovy(); }
+
+// Clicker Game
+function clickerGame(){
+  let clicks=0;
+  gameContent.innerHTML=`<h2>Click Groovy!</h2><p id="clickCount">Clicks: 0</p><button id="clickBtn">Click Me!</button>`;
+  const btn = document.getElementById('clickBtn');
+  const counter = document.getElementById('clickCount');
+  btn.onclick = ()=>{
+    clicks++; counter.textContent=`Clicks: ${clicks}`;
+    energy+=1; if(energy>100)energy=100; updateGroovy();
+  };
+}
+
+// Dance Game
+function danceGame(){
+  let sequence=['up','down','left','right'];
+  let userSeq=[];
+  gameContent.innerHTML=`<h2>Dance Game! Repeat sequence</h2>`;
+  sequence.forEach(dir=>{
+    let b=document.createElement('button');
+    b.textContent=dir;
+    b.onclick=()=>{ userSeq.push(dir); checkDance(); };
+    gameContent.appendChild(b);
+  });
+  function checkDance(){
+    if(userSeq.length===sequence.length){
+      let correct = sequence.every((v,i)=>v===userSeq[i]);
+      if(correct){ energy+=10; if(energy>100)energy=100; output.innerHTML+=`<p>Groovy: Perfect dance! 💃</p>`; }
+      else output.innerHTML+=`<p>Groovy: Oops! Try again! 😅</p>`;
+      userSeq=[]; updateGroovy();
+    }
+  }
+}
+
+// Typing Game
+function typingGame(){
+  const words=["groovy","robot","fun","dance","click","pet","energy","happy"];
+  const word=words[Math.floor(Math.random()*words.length)];
+  gameContent.innerHTML=`<h2>Type this word: ${word}</h2><input id="typeInput"><button onclick="checkTyping('${word}')">Submit</button>`;
+}
+function checkTyping(word){
+  const val=document.getElementById('typeInput').value;
+  if(val===word){ energy+=5; if(energy>100)energy=100; output.innerHTML+=`<p>Groovy: Correct! 👍</p>`; }
+  else output.innerHTML+=`<p>Groovy: Wrong! 😢</p>`;
+  updateGroovy();
+}
 updateGroovy();
 </script>
 
