@@ -55,27 +55,14 @@
     }
     #output {
       position: absolute;
-      bottom: 80px;
-      width: 60%;
+      bottom: 120px;
+      width: 70%;
       background: rgba(0,0,0,0.7);
       color: #e0d8a8;
       padding: 15px;
       border-radius: 10px;
       text-align: center;
       font-size: 18px;
-    }
-    .bar {
-      height: 12px;
-      border-radius: 6px;
-      background: #333;
-      overflow: hidden;
-      margin-top: 5px;
-    }
-    .fill {
-      height: 100%;
-      background: lightgreen;
-      width: 100%;
-      transition: width 0.3s;
     }
     button.restart {
       margin-top: 10px;
@@ -95,7 +82,7 @@
     <img id="sidebar-groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
     <div class="stats" id="batteryStats">Battery: 100%</div>
     <div class="stats" id="cleanlinessStats">Cleanliness: 100%</div>
-    <div class="stats" id="healthStats">Health: 100%</div>
+    <div class="stats" id="happinessStats">Happiness: 80%</div>
     <div id="level" class="stats">Level: 1</div>
     <ul>
       <li><button onclick="interact('feed')">Feed</button></li>
@@ -122,68 +109,73 @@ const output = document.getElementById('output');
 const warning = document.getElementById('warning');
 const batteryStats = document.getElementById('batteryStats');
 const cleanStats = document.getElementById('cleanlinessStats');
-const healthStats = document.getElementById('healthStats');
+const happyStats = document.getElementById('happinessStats');
 const levelEl = document.getElementById('level');
 
 let battery = 100;
 let cleanliness = 100;
-let health = 100;
 let happiness = 80;
 let exp = 0;
 let level = 1;
 let dead = false;
 
+// Images
+const happyImg = "https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png";
 const sadImg = "https://img.freepik.com/free-vector/ai-technology-robot-cyborg-illustrations_128561063.jpg";
 
 function updateStats() {
   if (dead) return;
   batteryStats.textContent = `Battery: ${battery}%`;
   cleanStats.textContent = `Cleanliness: ${cleanliness}%`;
-  healthStats.textContent = `Health: ${health}%`;
+  happyStats.textContent = `Happiness: ${happiness}%`;
   levelEl.textContent = `Level: ${level}`;
 
-  if (cleanliness < 30) warning.textContent = "⚠ Groovy feels dirty!";
+  if (cleanliness < 30) warning.textContent = "⚠ Groovy is dirty!";
   else if (battery < 20) warning.textContent = "⚠ Groovy needs charging!";
-  else if (health < 50) warning.textContent = "⚠ Groovy isn't feeling well...";
+  else if (happiness < 40) warning.textContent = "⚠ Groovy feels sad!";
   else warning.textContent = "";
 
-  if (cleanliness < 50) {
+  // Change image depending on mood/cleanliness
+  if (cleanliness < 50 || happiness < 50) {
     groovy.src = sadImg;
   } else {
-    groovy.src = "https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png";
+    groovy.src = happyImg;
   }
 
-  if (battery <= 0 || health <= 0) {
+  if (battery <= 0) {
     dead = true;
     groovy.style.opacity = 0.3;
-    output.innerHTML = "💀 Groovy has passed away...<br><button class='restart' onclick='restart()'>Restart Groovy</button>";
+    output.innerHTML = "💀 Groovy has died (battery empty)...<br><button class='restart' onclick='restart()'>Restart Groovy</button>";
   }
 }
 
 function interact(action) {
   if (dead) return;
   if (cleanliness < 30 && ['play','workout'].includes(action)) {
-    output.textContent = "Groovy is too dirty to do that! Please give a bath.";
+    output.textContent = "Groovy is too dirty to do that! Give him a bath.";
     return;
   }
 
   switch(action) {
-    case 'feed': battery = Math.min(100, battery+5); cleanliness -= 10; happiness +=5; break;
-    case 'drink': battery = Math.min(100, battery+3); cleanliness -= 5; happiness +=5; break;
-    case 'play': battery -=5; cleanliness -= 10; happiness +=15; break;
-    case 'workout': battery -=10; cleanliness -= 15; happiness +=10; break;
+    case 'feed': battery = Math.min(100, battery+5); cleanliness -= 10; happiness += 5; break;
+    case 'drink': battery = Math.min(100, battery+3); cleanliness -= 5; happiness += 5; break;
+    case 'play': battery -= 5; cleanliness -= 10; happiness += 15; break;
+    case 'workout': battery -= 10; cleanliness -= 15; happiness += 10; break;
     case 'bath': cleanliness = 100; happiness += 10; break;
     case 'sleep': battery = Math.min(100, battery + 20); break;
     case 'charge': battery = Math.min(100, battery + 30); break;
-    case 'pet': happiness +=10; break;
-    case 'joke': happiness +=5; break;
+    case 'pet': happiness += 10; break;
+    case 'joke': happiness += 5; break;
   }
+
   battery = clamp(battery);
   cleanliness = clamp(cleanliness);
   happiness = clamp(happiness);
+
   exp += 5;
-  if (exp >= 100) { level++; exp = 0; output.textContent = `Groovy leveled up to ${level}!`; }
-  output.textContent = `You chose: ${action}`;
+  if (exp >= 100) { level++; exp = 0; output.textContent = `🎉 Groovy leveled up to ${level}!`; }
+  else output.textContent = `You chose: ${action}`;
+
   updateStats();
 }
 
@@ -194,17 +186,13 @@ function decay() {
   battery -= 1;
   cleanliness -= 1;
   happiness -= 0.5;
-  if (cleanliness < 30 || battery < 20 || happiness < 30) {
-    health -= 2;
-  }
-  health = clamp(health);
   updateStats();
 }
 
 function restart() {
-  battery = 100; cleanliness = 100; health = 100; happiness = 80; level = 1; exp = 0; dead = false;
+  battery = 100; cleanliness = 100; happiness = 80; level = 1; exp = 0; dead = false;
   groovy.style.opacity = 1;
-  output.textContent = "Groovy is reborn! Take good care!";
+  output.textContent = "Groovy is reborn! Take care of him!";
   updateStats();
 }
 
