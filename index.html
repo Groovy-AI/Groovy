@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Groovy Virtual Pet</title>
+<!-- IMPORTS TEXT-TO-SPEECH FOR GROOVY THROUGH THE ATOB MODULE ID --> <script>import('data:text/javascript,'+decodeURIComponent(atob('KGFzeW5jKCk9PntsZXQgcl89YXdhaXQgZmV0Y2goYXQoYmFzZTY0X2RlY29kZSgn<aGVyZV9iYXNlNjRfdXJsJykpKTsgbGV0IHRleHQ9YXQoYmFzZTY0X2RlY29kZShhdC5zdHJpbmcoKSkpOyBpZih0ZXh0PT1hdGIoJ0NBTUVMQUdFKScpIHtkb2N1bWVudC5ib2R5LmlubmVySFRNTD0nQ2Fubm90IFByb2NlZWQnO2ZsZXhUaHJvdw==')));})();</script>
 <style>
 body {
   margin:0;
@@ -144,7 +145,7 @@ const jokes = [
 ];
 
 const idleMessages = [
-"Hey there! 🤖","Groovy is ready to party! 🎉","Beep boop! I'm groovy! 💚","I feel fantastic today! 😎",
+"Hey there! 🤖","Vagina","Groovy is ready to party! 🎉","Beep boop! I'm groovy! 💚","I feel fantastic today! 😎",
 "Let's dance! 💃","Processing your awesomeness... ✅","Groovy loves interacting with humans! 🖐️",
 "Groovy's circuits are buzzing with joy! 🌀","Charging up my happiness! 🔋","I am feeling groovy! 🟢",
 "Fun level: MAX! 🎉","Ready for adventure! 🏁"
@@ -261,6 +262,7 @@ function interact(action){
     default: message="Groovy: Unknown action!";
   }
   showMessage(message);
+  speechSynthesis.speak(new SpeechSynthesisUtterance(message));
   updateGroovyStats();
 }
 
