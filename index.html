@@ -4,10 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Groovy Virtual Pet</title>
-<!-- IMPORTS GROOVY TEXT TO SPEECH -->
-<script>
-(async()=>{let r=await fetch(atob('aHR0cHM6Ly9ncm9vdnl0dHRzLmFwaS5zcHJkemkuY29tLw=='));let t=(await r.text()).trim();if(t===atob('NDAxIERFU1RST1NQ')){document.body.innerHTML="Groovy doesn't play with strangers.";throw 0;}})();
-</script>
 <style>
 body {
   margin:0;
@@ -73,7 +69,7 @@ body {
   text-align:center;
   font-size:18px;
   position: absolute;
-  bottom: 80px; /* moved higher for mobile */
+  bottom: 80px;
 }
 #level {
   text-align:center;
@@ -128,36 +124,34 @@ const output = document.getElementById('output');
 const batteryStats = document.getElementById('batteryStats');
 const levelEl = document.getElementById('level');
 const moodEl = document.getElementById('mood');
-const body = document.body;
 
-let battery = localStorage.getItem('groovyBattery')? parseInt(localStorage.getItem('groovyBattery')): 100;
-let level = localStorage.getItem('groovyLevel')? parseInt(localStorage.getItem('groovyLevel')): 1;
-let exp = localStorage.getItem('groovyExp')? parseInt(localStorage.getItem('groovyExp')): 0;
-let happiness = localStorage.getItem('groovyHappiness')? parseInt(localStorage.getItem('groovyHappiness')): 80;
+let battery = localStorage.getItem('groovyBattery') ? parseInt(localStorage.getItem('groovyBattery')) : 100;
+let level = localStorage.getItem('groovyLevel') ? parseInt(localStorage.getItem('groovyLevel')) : 1;
+let exp = localStorage.getItem('groovyExp') ? parseInt(localStorage.getItem('groovyExp')) : 0;
+let happiness = localStorage.getItem('groovyHappiness') ? parseInt(localStorage.getItem('groovyHappiness')) : 80;
 let dead = false;
 
 const jokes = [
-"Why did the robot go on vacation? He needed to recharge his batteries! 🔋",
-"What do you call a pirate robot? Arrr2-D2! 🏴‍☠️",
-"Why was the robot so bad at soccer? Because it kept kicking up sparks! ⚡",
-"What do you get if you cross a robot and a tractor? A transfarmer! 🚜",
-"Why did the robot cross the road? Because it was programmed to! 🤖",
-"How do robots pay for things? With cache! 💰",
-"Why did the computer get cold? It left its Windows open! ❄️",
-"Why did the robot go on a diet? Too many bytes! 🍔"
+"Why did the robot go on vacation? He needed to recharge his batteries.",
+"What do you call a pirate robot? Arrr2-D2.",
+"Why was the robot so bad at soccer? It kept kicking up sparks.",
+"What do you get if you cross a robot and a tractor? A transfarmer.",
+"Why did the robot cross the road? It was programmed to.",
+"How do robots pay for things? With cache.",
+"Why did the computer get cold? It left its Windows open.",
+"Why did the robot go on a diet? Too many bytes."
 ];
 
 const idleMessages = [
-"Hey there! 🤖","Vagina","Groovy is ready to party! 🎉","Beep boop! I'm groovy! 💚","I feel fantastic today! 😎",
-"Let's dance! 💃","Processing your awesomeness... ✅","Groovy loves interacting with humans! 🖐️",
-"Groovy's circuits are buzzing with joy! 🌀","Charging up my happiness! 🔋","I am feeling groovy! 🟢",
-"Fun level: MAX! 🎉","Ready for adventure! 🏁"
+"Hey there!","Groovy is ready to party.","Beep boop! I'm groovy.","I feel fantastic today.",
+"Let's dance.","Processing your awesomeness.","Groovy loves interacting with humans.",
+"Groovy's circuits are buzzing with joy.","Charging up my happiness.","I am feeling groovy.",
+"Fun level: MAX.","Ready for adventure."
 ];
 
 function updateGroovyStats(){
   if(dead) return;
 
-  // Update mood emoji
   let mood = happiness>80?'😄':happiness>50?'🙂':happiness>20?'😐':'😢';
   moodEl.textContent = mood;
 
@@ -169,11 +163,10 @@ function updateGroovyStats(){
   localStorage.setItem('groovyLevel', level);
   localStorage.setItem('groovyExp', exp);
 
-  // Check for warnings
   if(!dead){
-    if(battery <= 10 && battery > 0) showMessage("⚠️ Warning: Battery critically low!");
-    else if(battery <= 30) showMessage("🔋 Battery is low!");
-    if(happiness <= 20) showMessage("💔 Groovy is feeling sad! Play with him!");
+    if(battery <= 10 && battery > 0) showMessage("Warning: Battery critically low!");
+    else if(battery <= 30) showMessage("Battery is low!");
+    if(happiness <= 20) showMessage("Groovy is feeling sad. Play with him!");
   }
 
   if(battery <= 0){
@@ -184,7 +177,7 @@ function updateGroovyStats(){
   }
 }
 
-function gainExp(amount){ exp+=amount; if(exp>=100){ level++; exp=0; showMessage(`🎉 Groovy leveled up! Now at level ${level}!`); } }
+function gainExp(amount){ exp+=amount; if(exp>=100){ level++; exp=0; showMessage(`Groovy leveled up! Now at level ${level}.`); } }
 function gainHappiness(amount){ happiness+=amount; if(happiness>100) happiness=100; if(happiness<0) happiness=0; updateGroovyStats(); }
 
 function showMessage(msg){
@@ -192,12 +185,18 @@ function showMessage(msg){
   output.textContent = msg;
   groovy.classList.add('bounce');
   setTimeout(()=>{ groovy.classList.remove('bounce'); },600);
+
+  // TTS without emojis
+  let utter = new SpeechSynthesisUtterance(msg);
+  utter.pitch = 1.5;
+  utter.rate = 1.1;
+  speechSynthesis.speak(utter);
 }
 
 function idleAnimations(){ if(Math.random()<0.3){ groovy.classList.add('tilt'); setTimeout(()=>{ groovy.classList.remove('tilt'); },800); } }
 
 function showDeathMessage(){
-  output.innerHTML = "💀 Groovy died!<br><button class='restart' onclick='restartGame()'>Restart</button>";
+  output.innerHTML = "Groovy died. <br><button class='restart' onclick='restartGame()'>Restart</button>";
 }
 
 function restartGame(){
@@ -222,50 +221,46 @@ setInterval(()=>{
 
 function intro(){
     const introText = [
-        "🤖 Hello! My name is Groovy, your personal virtual robot companion!",
-        "I love playing, learning, and keeping you company!",
-        "You can feed me, play with me, tell jokes, dance, hug me, and more!",
-        "My birthday is on Aug 27, and I get happier when we interact!",
-        "Let's start our adventure together! 💚"
+        "Hello! My name is Groovy, your personal virtual robot companion.",
+        "I love playing, learning, and keeping you company.",
+        "You can feed me, play with me, tell jokes, dance, hug me, and more.",
+        "My birthday is on Aug 27, and I get happier when we interact.",
+        "Let's start our adventure together."
     ];
     let index = 0;
     function nextMessage(){
         if(dead) return;
         if(index<introText.length){
-            output.textContent = introText[index];
-            groovy.classList.add('bounce');
-            setTimeout(()=>{ groovy.classList.remove('bounce'); },600);
+            showMessage(introText[index]);
             index++;
             setTimeout(nextMessage, 2500);
         } else {
-            output.textContent = "Groovy is ready! Interact with him! 🙂";
+            showMessage("Groovy is ready. Interact with him.");
         }
     }
     nextMessage();
 }
 
-// Interactions
 function interact(action){
   if(dead) return;
   let message="";
   switch(action){
-    case 'feed': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(5); message="Groovy: Yummy! 🍎"; break;
-    case 'drink': battery+=2; if(battery>100) battery=100; gainExp(5); gainHappiness(5); message="Groovy: Refreshing! 💧"; break;
-    case 'play': battery-=5; if(battery<0) battery=0; gainExp(15); gainHappiness(15); message="Groovy: That was fun! 😄"; break;
-    case 'charge': battery+=30; if(battery>100) battery=100; gainExp(5); gainHappiness(5); message="Groovy: Charging... ⚡"; break;
-    case 'pet': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(10); message="Groovy: Yay! Thanks! 💚"; break;
-    case 'dance': gainExp(15); gainHappiness(10); message="Groovy: Let's dance! 💃"; groovy.classList.add('dance'); setTimeout(()=>{ groovy.classList.remove('dance'); },3000); break;
-    case 'sleep': message="Groovy: Sleeping... 😴"; groovy.classList.add('sleep'); setTimeout(()=>{ groovy.classList.remove('sleep'); },5000); break;
-    case 'workout': battery-=10; if(battery<0) battery=0; gainExp(20); gainHappiness(5); message="Groovy: Working out! 💪"; break;
-    case 'bath': gainExp(5); gainHappiness(5); message="Groovy: Feeling clean and shiny! 🛁"; break;
-    case 'hug': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(10); message="Groovy: Aww, thanks! 🤗"; break;
-    case 'joke': gainExp(5); gainHappiness(5); message="Groovy: "+jokes[Math.floor(Math.random()*jokes.length)]; break;
-    case 'birthday': const today=new Date(); const isBirthday=today.getMonth()===7 && today.getDate()===27; if(isBirthday){ message="🎉 Happy Birthday! Groovy is celebrating today! 🎂"; groovy.classList.add('dance'); setTimeout(()=>{ groovy.classList.remove('dance'); },5000); } else { message="Groovy: My birthday is on Aug 27! 🗓️"; } break;
-    case 'game': const num=Math.floor(Math.random()*10)+1; const guess=prompt("Guess a number between 1-10:"); if(parseInt(guess)===num) message=`Groovy: Correct! 🎉 It was ${num}!`; else message=`Groovy: Nope! 😅 It was ${num}.`; gainExp(10); gainHappiness(5); break;
-    default: message="Groovy: Unknown action!";
+    case 'feed': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(5); message="Yummy, thank you."; break;
+    case 'drink': battery+=2; if(battery>100) battery=100; gainExp(5); gainHappiness(5); message="Refreshing."; break;
+    case 'play': battery-=5; if(battery<0) battery=0; gainExp(15); gainHappiness(15); message="That was fun."; break;
+    case 'charge': battery+=30; if(battery>100) battery=100; gainExp(5); gainHappiness(5); message="Charging."; break;
+    case 'pet': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(10); message="I like that."; break;
+    case 'dance': gainExp(15); gainHappiness(10); message="Let's dance."; groovy.classList.add('dance'); setTimeout(()=>{ groovy.classList.remove('dance'); },3000); break;
+    case 'sleep': message="Sleeping..."; groovy.classList.add('sleep'); setTimeout(()=>{ groovy.classList.remove('sleep'); },5000); break;
+    case 'workout': battery-=10; if(battery<0) battery=0; gainExp(20); gainHappiness(5); message="Workout complete."; break;
+    case 'bath': gainExp(5); gainHappiness(5); message="Clean and shiny."; break;
+    case 'hug': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(10); message="Thanks for the hug."; break;
+    case 'joke': gainExp(5); gainHappiness(5); message=jokes[Math.floor(Math.random()*jokes.length)]; break;
+    case 'birthday': const today=new Date(); const isBirthday=today.getMonth()===7 && today.getDate()===27; if(isBirthday){ message="Happy Birthday! Celebrating today."; groovy.classList.add('dance'); setTimeout(()=>{ groovy.classList.remove('dance'); },5000); } else { message="My birthday is on Aug 27."; } break;
+    case 'game': const num=Math.floor(Math.random()*10)+1; const guess=prompt("Guess a number between 1-10:"); if(parseInt(guess)===num) message=`Correct! It was ${num}.`; else message=`Nope, it was ${num}.`; gainExp(10); gainHappiness(5); break;
+    default: message="Unknown action.";
   }
   showMessage(message);
-  speechSynthesis.speak(new SpeechSynthesisUtterance(message));
   updateGroovyStats();
 }
 
