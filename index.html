@@ -15,26 +15,73 @@ body {
   height:100vh;
   overflow:hidden;
 }
-#sidebar { width:250px; background: rgba(34,34,34,0.9); padding:20px; overflow-y:auto; }
+#sidebar {
+  width:250px;
+  background: rgba(34,34,34,0.9);
+  padding:20px;
+  overflow-y:auto;
+}
 #sidebar h2 { text-align:center; color:#fff; }
 #sidebar img { width:100%; border-radius:10px; margin-bottom:10px; }
 #sidebar .stats { color:#fff; margin-bottom:10px; line-height:1.5; }
 #sidebar ul { list-style:none; padding:0; margin:0; }
 #sidebar li { margin:5px 0; }
-#sidebar button { width:100%; padding:10px; background:#444; color:#fff; border:none; border-radius:5px; cursor:pointer; text-align:left; margin-bottom:5px; }
+#sidebar button {
+  width:100%; padding:10px; background:#444; color:#fff;
+  border:none; border-radius:5px; cursor:pointer; text-align:left;
+  margin-bottom:5px;
+}
 #sidebar button:hover { background:#666; }
-#main { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; position:relative; padding-top:50px; }
-#mood { font-size:36px; margin-bottom:10px; }
-#groovy { width:200px; transition: transform 0.3s; cursor: grab; position: absolute; left: calc(50% - 100px); top: 100px; }
+#main {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  position:relative;
+  padding-top:50px;
+}
+#mood {
+  font-size:36px; 
+  margin-bottom:10px; 
+}
+#groovy {
+  width:200px;
+  transition: transform 0.3s;
+  cursor: grab;
+  position: absolute;
+  left: calc(50% - 100px);
+  top: 100px;
+}
 .bounce { animation: bounce 0.6s ease; }
 .dance { animation: dance 0.5s infinite alternate; }
 .sleep { opacity:0.5; }
 .tilt { transform: rotate(10deg); }
+
 @keyframes bounce { 0% { transform: translateY(0); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0); } }
 @keyframes dance { 0% { transform: rotate(0deg); } 50% { transform: rotate(15deg); } 100% { transform: rotate(-15deg); } }
-#output { background: rgba(0,0,0,0.7); padding:15px; border-radius:10px; width:60%; text-align:center; font-size:18px; position: absolute; bottom: 80px; }
-#level { text-align:center; margin-top:10px; font-weight:bold; color:#fff; }
-button.restart { margin-top:10px; background:#ff4444; color:#fff; }
+
+#output {
+  background: rgba(0,0,0,0.7);
+  padding:15px;
+  border-radius:10px;
+  width:60%;
+  text-align:center;
+  font-size:18px;
+  position: absolute;
+  bottom: 80px;
+}
+#level {
+  text-align:center;
+  margin-top:10px;
+  font-weight:bold;
+  color:#fff;
+}
+button.restart {
+  margin-top:10px;
+  background:#ff4444;
+  color:#fff;
+}
 </style>
 </head>
 <body>
@@ -42,9 +89,12 @@ button.restart { margin-top:10px; background:#ff4444; color:#fff; }
 <div id="sidebar">
 <h2>Groovy Commands</h2>
 <img id="sidebar-groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
-<div class="stats" id="batteryStats">Battery: 100%</div>
-<div class="stats" id="moodStats">Mood: 80</div>
+
+<div class="stats" id="batteryStats">
+Battery: 100%
+</div>
 <div id="level">Level: 1</div>
+
 <ul>
   <li><button onclick="interact('feed')">Feed</button></li>
   <li><button onclick="interact('drink')">Give Water</button></li>
@@ -72,131 +122,174 @@ button.restart { margin-top:10px; background:#ff4444; color:#fff; }
 const groovy = document.getElementById('groovy');
 const output = document.getElementById('output');
 const batteryStats = document.getElementById('batteryStats');
-const moodStats = document.getElementById('moodStats');
 const levelEl = document.getElementById('level');
 const moodEl = document.getElementById('mood');
 
-let battery = 100, level = 1, exp = 0, happiness = 80, dead = false;
-let lastMoodAction = "", consecutiveMoodCount = 0;
+let battery = localStorage.getItem('groovyBattery')? parseInt(localStorage.getItem('groovyBattery')): 100;
+let level = localStorage.getItem('groovyLevel')? parseInt(localStorage.getItem('groovyLevel')): 1;
+let exp = localStorage.getItem('groovyExp')? parseInt(localStorage.getItem('groovyExp')): 0;
+let happiness = localStorage.getItem('groovyHappiness')? parseInt(localStorage.getItem('groovyHappiness')): 80;
+let dead = false;
+let recentMoodActions = [];
 
-// --- TTS setup ---
-let voices = [], groovyVoice = null;
-function loadVoices(){
-  voices = speechSynthesis.getVoices();
-  groovyVoice = voices.find(v => v.name.toLowerCase().includes('zira') || v.name.toLowerCase().includes('samantha') || v.name.toLowerCase().includes('english')) || voices[0];
+const jokes = [
+"Why did the robot go on vacation? He needed to recharge his batteries!",
+"What do you call a pirate robot? Arrr2-D2!",
+"Why was the robot so bad at soccer? Because it kept kicking up sparks!",
+"What do you get if you cross a robot and a tractor? A transfarmer!",
+"Why did the robot cross the road? Because it was programmed to!",
+"How do robots pay for things? With cache!",
+"Why did the computer get cold? It left its Windows open!",
+"Why did the robot go on a diet? Too many bytes!",
+// ... add more until 50+
+];
+
+const responses = {
+  play: [
+    "Yay! Playing is so much fun!",
+    "I love this game!",
+    "You're the best human!",
+    "Woohoo, let's go again!",
+    "This is awesome!"
+    // ... add more until ~30+
+  ],
+  pet: [
+    "Hehe, that feels nice!",
+    "I love headpats!",
+    "Thanks for the affection!",
+    "So cozy!",
+    "You're making me happy!"
+  ],
+  dance: [
+    "Let's groove!",
+    "I love dancing with you!",
+    "Boogie time!",
+    "Shake it, shake it!",
+    "Feeling the rhythm!"
+  ],
+  workout: [
+    "Phew, that was intense!",
+    "I feel stronger!",
+    "Let's keep moving!",
+    "Good job team!",
+    "Flexing circuits!"
+  ],
+  bath: [
+    "All clean and shiny!",
+    "Splish splash!",
+    "Feeling fresh!",
+    "Sparkly as ever!",
+    "Time for self-care!"
+  ],
+  hug: [
+    "Aww, thanks for the hug!",
+    "I feel warm inside!",
+    "Cuddles are the best!",
+    "I love hugs!",
+    "So comforting!"
+  ],
+  feed: [
+    "Yum, that was tasty!",
+    "Delicious!",
+    "Thanks for the food!",
+    "I love snacks!",
+    "Feeling energized!"
+  ],
+  drink: [
+    "Refreshing!",
+    "Ahh, just what I needed!",
+    "So hydrating!",
+    "Feeling great!",
+    "Slurp!"
+  ],
+  charge: [
+    "Charging up!",
+    "Powering up circuits!",
+    "Feeling electrified!",
+    "Zap zap!",
+    "Energy restored!"
+  ],
+  sleep: [
+    "Zzz... so comfy!",
+    "Dreaming of adventures!",
+    "I feel rested!",
+    "Time to recharge!",
+    "Sleep mode activated!"
+  ]
+};
+
+// --- TTS Setup ---
+let groovyVoice = null;
+function loadVoices() {
+  let voices = speechSynthesis.getVoices();
+  if(voices.length > 0){
+    groovyVoice = voices.find(v => v.name.toLowerCase().includes("zira") || v.name.toLowerCase().includes("samantha") || v.name.toLowerCase().includes("english")) || voices[0];
+  }
 }
 speechSynthesis.onvoiceschanged = loadVoices;
 loadVoices();
-function speak(msg){
+
+function speak(text){
   if(!groovyVoice) loadVoices();
-  let utter = new SpeechSynthesisUtterance(msg);
-  utter.voice = groovyVoice;
-  utter.pitch = 1.3;
-  utter.rate = 1.1;
-  speechSynthesis.speak(utter);
-}
-
-function gainExp(amount){ 
-  exp+=amount; 
-  if(exp>=100){ level++; exp=0; showMessage(`Groovy leveled up! Now at level ${level}!`); speak(`Groovy leveled up! Now at level ${level}!`); } 
-}
-
-function gainHappiness(amount){ 
-  happiness+=amount; 
-  if(happiness>100) happiness=100; 
-  if(happiness<0) happiness=0; 
-  updateGroovyStats(); 
+  let u = new SpeechSynthesisUtterance(text);
+  u.voice = groovyVoice;
+  u.pitch = 1.5;
+  u.rate = 1.1;
+  u.volume = 1;
+  speechSynthesis.speak(u);
 }
 
 function updateGroovyStats(){
   if(dead) return;
-  moodEl.textContent = happiness>80?'😄':happiness>50?'🙂':happiness>20?'😐':'😢';
+  let moodIcon = happiness>80?'😄':happiness>50?'🙂':happiness>20?'😐':'😢';
+  moodEl.textContent = moodIcon;
   batteryStats.textContent = `Battery: ${battery}%`;
-  moodStats.textContent = `Mood: ${happiness}`;
   levelEl.textContent = `Level: ${level}`;
-  if(happiness<20) battery -=0.5;
-  if(battery <=0){ dead = true; battery=0; groovy.style.opacity=0.3; showDeathMessage(); }
+  localStorage.setItem('groovyBattery', battery);
+  localStorage.setItem('groovyHappiness', happiness);
+  localStorage.setItem('groovyLevel', level);
+  localStorage.setItem('groovyExp', exp);
+  if(battery <= 0){
+    dead = true;
+    battery = 0;
+    groovy.style.opacity = 0.3;
+    output.innerHTML = "💀 Groovy died!<br><button class='restart' onclick='restartGame()'>Restart</button>";
+  }
 }
 
-function showMessage(msg){
-  if(dead) return;
+function gainExp(amount){ exp+=amount; if(exp>=100){ level++; exp=0; showOutput(`🎉 Groovy leveled up! Now at level ${level}!`); } }
+function gainHappiness(amount){ happiness+=amount; if(happiness>100) happiness=100; if(happiness<0) happiness=0; }
+
+function showOutput(msg){
   output.textContent = msg;
-  groovy.classList.add('bounce');
-  setTimeout(()=>{ groovy.classList.remove('bounce'); },600);
   speak(msg);
 }
 
-function showDeathMessage(){
-  output.innerHTML = "💀 Groovy died!<br><button class='restart' onclick='restartGame()'>Restart</button>";
-  speak("Groovy died!");
-}
-
-function restartGame(){
-  battery = 100; happiness = 80; level = 1; exp = 0; dead = false;
-  groovy.style.opacity = 1; lastMoodAction=""; consecutiveMoodCount=0;
-  updateGroovyStats(); intro();
-}
-
-setInterval(()=>{
-  if(dead) return; battery -=1; if(battery<0) battery=0;
-  happiness -=1; if(happiness<0) happiness=0;
-  updateGroovyStats();
-},10000);
-
-function intro(){
-    const introText = [
-        "Hello! My name is Groovy, your robot companion!",
-        "I love playing and keeping you company!",
-        "You can feed me, play with me, tell jokes, dance, hug me, and more!",
-        "Let's start our adventure together!"
-    ];
-    let index=0;
-    function nextMessage(){ if(dead) return;
-        if(index<introText.length){ showMessage(introText[index]); index++; setTimeout(nextMessage, 2000);}
-        else showMessage("Groovy is ready! Interact with him!");
-    }
-    nextMessage();
-}
-
-// Mood phrases
-const moodPhrases = {
-  play: ["Yay! Let's play!", "I'm having so much fun!", "Whee!"],
-  pet: ["Hehe! I love that!", "Thanks for petting me!", "So cozy!"],
-  dance: ["Let's boogie!", "I love to dance!", "Groovy moves!"],
-  workout: ["Phew! That was a good workout!", "Feeling strong!", "Sweat mode activated!"],
-  bath: ["All clean and shiny!", "Splish splash!", "Feeling refreshed!"],
-  hug: ["Aww, thanks!", "Hugs are the best!", "I feel loved!"]
-};
-
 function interact(action){
   if(dead) return;
-  let message="";
-
+  let msg = "";
   const moodActions = ['play','pet','dance','workout','bath','hug'];
+
   if(moodActions.includes(action)){
-    if(lastMoodAction===action){ consecutiveMoodCount++; }
-    else { lastMoodAction=action; consecutiveMoodCount=1; }
-    if(consecutiveMoodCount>=3){
-      gainHappiness(-10);
-      message = "I'm getting bored of this...";
+    recentMoodActions.push(action);
+    if(recentMoodActions.length > 3) recentMoodActions.shift();
+    if(recentMoodActions.every(a => a === action)){
+      happiness = Math.max(0,happiness-10);
+      msg = "I'm getting bored of this...";
     } else {
-      gainHappiness(10);
-      const phrases = moodPhrases[action];
-      message = phrases[Math.floor(Math.random()*phrases.length)];
+      happiness = Math.min(100,happiness+10);
+      msg = responses[action][Math.floor(Math.random()*responses[action].length)];
     }
   } else {
-    consecutiveMoodCount=0; lastMoodAction="";
-    switch(action){
-      case 'feed': battery+=5; if(battery>100) battery=100; gainExp(10); message="Yummy!"; break;
-      case 'drink': battery+=2; if(battery>100) battery=100; gainExp(5); message="Refreshing!"; break;
-      case 'charge': battery+=30; if(battery>100) battery=100; gainExp(5); message="Charging..."; break;
-      case 'joke': message="Why did the robot go to school? Because it had bytes to learn!"; break;
-      case 'birthday': message="It's my birthday soon!"; break;
-      case 'game': const num=Math.floor(Math.random()*10)+1; const guess=prompt("Guess a number 1-10:"); message=parseInt(guess)===num? `Correct! It was ${num}`:`Nope! It was ${num}`; break;
-    }
+    msg = responses[action] ? responses[action][Math.floor(Math.random()*responses[action].length)] : "Groovy is unsure what to do...";
   }
 
-  showMessage(message);
+  // Effect on battery/exp
+  if(action==='play' || action==='workout') battery = Math.max(0,battery-5);
+  gainExp(10);
+  gainHappiness(0); // already applied
+
+  showOutput(msg);
   updateGroovyStats();
 }
 
@@ -206,8 +299,17 @@ groovy.addEventListener('mousedown',(e)=>{ isDragging=true; offsetX=e.clientX-gr
 document.addEventListener('mouseup',()=>{ isDragging=false; groovy.style.cursor='grab'; });
 document.addEventListener('mousemove',(e)=>{ if(isDragging){ groovy.style.left=(e.clientX-offsetX)+'px'; groovy.style.top=(e.clientY-offsetY)+'px'; } });
 
+// Restart
+function restartGame(){
+  battery = 100; happiness=80; level=1; exp=0; dead=false; recentMoodActions=[];
+  groovy.style.opacity=1;
+  updateGroovyStats();
+  showOutput("Groovy is back! Ready to play again!");
+}
+
+// Initialize
 updateGroovyStats();
-intro();
+showOutput("🤖 Hello! I'm Groovy, your virtual pet!");
 </script>
 </body>
 </html>
