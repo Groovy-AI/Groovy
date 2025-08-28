@@ -122,12 +122,14 @@ let groovyVoice = null;
 function loadVoices() {
   let voices = speechSynthesis.getVoices();
   if (voices.length > 0) {
+    // Prefer robot/digital sounding or playful voices
     groovyVoice = voices.find(v => 
-      v.name.toLowerCase().includes("zira") || 
-      v.name.toLowerCase().includes("samantha") || 
-      v.name.toLowerCase().includes("english") || 
-      v.name.toLowerCase().includes("robot")
-    ) || voices[0];
+      v.name.toLowerCase().includes("robot") || 
+      v.name.toLowerCase().includes("google uk english male") || 
+      v.name.toLowerCase().includes("fred") || 
+      v.name.toLowerCase().includes("alex") || 
+      v.name.toLowerCase().includes("david")
+    ) || voices[0]; // fallback to first available
   }
 }
 speechSynthesis.onvoiceschanged = loadVoices;
@@ -137,8 +139,8 @@ function groovySpeak(text) {
   if (!groovyVoice) loadVoices();
   let u = new SpeechSynthesisUtterance(text);
   u.voice = groovyVoice;
-  u.pitch = 1.5; // cute
-  u.rate = 1.1;  // a little fast
+  u.pitch = 1.7; // higher = cuter
+  u.rate = 1.15; // playful, a bit fast
   u.volume = 1;
   speechSynthesis.speak(u);
 }
@@ -172,7 +174,7 @@ function interact(action){
     case "drink": thirst=Math.max(0,thirst-20); msg="Slurp! That was refreshing!"; break;
     case "play": battery-=10; hunger+=5; thirst+=5; cleanliness-=10; msg="Woo! That was fun!"; break;
     case "pet": msg="Hehe! I love headpats! 🤖💕"; break;
-    case "joke": msg="Why did the robot go to school? Because it had a lot of 'byte'-s to learn!"; break;
+    case "joke": msg="Why did the robot go to school? Because it had lots of 'byte'-s to learn!"; break;
     case "workout": battery-=15; hunger+=10; thirst+=10; cleanliness-=15; msg="Phew! That was a good workout!"; break;
     case "bath": cleanliness=100; msg="Splish splash! All clean!"; break;
     case "sleep": battery=Math.min(100,battery+30); msg="Zzz... I feel recharged!"; break;
