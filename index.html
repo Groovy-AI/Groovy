@@ -15,73 +15,26 @@ body {
   height:100vh;
   overflow:hidden;
 }
-#sidebar {
-  width:250px;
-  background: rgba(34,34,34,0.9);
-  padding:20px;
-  overflow-y:auto;
-}
+#sidebar { width:250px; background: rgba(34,34,34,0.9); padding:20px; overflow-y:auto; }
 #sidebar h2 { text-align:center; color:#fff; }
 #sidebar img { width:100%; border-radius:10px; margin-bottom:10px; }
 #sidebar .stats { color:#fff; margin-bottom:10px; line-height:1.5; }
 #sidebar ul { list-style:none; padding:0; margin:0; }
 #sidebar li { margin:5px 0; }
-#sidebar button {
-  width:100%; padding:10px; background:#444; color:#fff;
-  border:none; border-radius:5px; cursor:pointer; text-align:left;
-  margin-bottom:5px;
-}
+#sidebar button { width:100%; padding:10px; background:#444; color:#fff; border:none; border-radius:5px; cursor:pointer; text-align:left; margin-bottom:5px; }
 #sidebar button:hover { background:#666; }
-#main {
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:flex-start;
-  position:relative;
-  padding-top:50px;
-}
-#mood {
-  font-size:36px; 
-  margin-bottom:10px; 
-}
-#groovy {
-  width:200px;
-  transition: transform 0.3s;
-  cursor: grab;
-  position: absolute;
-  left: calc(50% - 100px);
-  top: 100px;
-}
+#main { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; position:relative; padding-top:50px; }
+#mood { font-size:36px; margin-bottom:10px; }
+#groovy { width:200px; transition: transform 0.3s; cursor: grab; position: absolute; left: calc(50% - 100px); top: 100px; }
 .bounce { animation: bounce 0.6s ease; }
 .dance { animation: dance 0.5s infinite alternate; }
 .sleep { opacity:0.5; }
 .tilt { transform: rotate(10deg); }
-
 @keyframes bounce { 0% { transform: translateY(0); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0); } }
 @keyframes dance { 0% { transform: rotate(0deg); } 50% { transform: rotate(15deg); } 100% { transform: rotate(-15deg); } }
-
-#output {
-  background: rgba(0,0,0,0.7);
-  padding:15px;
-  border-radius:10px;
-  width:60%;
-  text-align:center;
-  font-size:18px;
-  position: absolute;
-  bottom: 80px;
-}
-#level {
-  text-align:center;
-  margin-top:10px;
-  font-weight:bold;
-  color:#fff;
-}
-button.restart {
-  margin-top:10px;
-  background:#ff4444;
-  color:#fff;
-}
+#output { background: rgba(0,0,0,0.7); padding:15px; border-radius:10px; width:60%; text-align:center; font-size:18px; position: absolute; bottom: 80px; }
+#level { text-align:center; margin-top:10px; font-weight:bold; color:#fff; }
+button.restart { margin-top:10px; background:#ff4444; color:#fff; }
 </style>
 </head>
 <body>
@@ -89,15 +42,9 @@ button.restart {
 <div id="sidebar">
 <h2>Groovy Commands</h2>
 <img id="sidebar-groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
-
-<div class="stats" id="batteryStats">
-Battery: 100%
-</div>
-<div class="stats" id="moodStats">
-Mood: 80
-</div>
+<div class="stats" id="batteryStats">Battery: 100%</div>
+<div class="stats" id="moodStats">Mood: 80</div>
 <div id="level">Level: 1</div>
-
 <ul>
   <li><button onclick="interact('feed')">Feed</button></li>
   <li><button onclick="interact('drink')">Give Water</button></li>
@@ -129,27 +76,17 @@ const moodStats = document.getElementById('moodStats');
 const levelEl = document.getElementById('level');
 const moodEl = document.getElementById('mood');
 
-let battery = localStorage.getItem('groovyBattery')? parseInt(localStorage.getItem('groovyBattery')): 100;
-let level = localStorage.getItem('groovyLevel')? parseInt(localStorage.getItem('groovyLevel')): 1;
-let exp = localStorage.getItem('groovyExp')? parseInt(localStorage.getItem('groovyExp')): 0;
-let happiness = localStorage.getItem('groovyHappiness')? parseInt(localStorage.getItem('groovyHappiness')): 80;
-let dead = false;
-
-// Track last mood action
-let lastMoodAction = "";
-let consecutiveMoodCount = 0;
+let battery = 100, level = 1, exp = 0, happiness = 80, dead = false;
+let lastMoodAction = "", consecutiveMoodCount = 0;
 
 // --- TTS setup ---
-let voices = [];
-let groovyVoice = null;
-
+let voices = [], groovyVoice = null;
 function loadVoices(){
   voices = speechSynthesis.getVoices();
   groovyVoice = voices.find(v => v.name.toLowerCase().includes('zira') || v.name.toLowerCase().includes('samantha') || v.name.toLowerCase().includes('english')) || voices[0];
 }
 speechSynthesis.onvoiceschanged = loadVoices;
 loadVoices();
-
 function speak(msg){
   if(!groovyVoice) loadVoices();
   let utter = new SpeechSynthesisUtterance(msg);
@@ -173,27 +110,12 @@ function gainHappiness(amount){
 
 function updateGroovyStats(){
   if(dead) return;
-
-  let moodEmoji = happiness>80?'😄':happiness>50?'🙂':happiness>20?'😐':'😢';
-  moodEl.textContent = moodEmoji;
-
+  moodEl.textContent = happiness>80?'😄':happiness>50?'🙂':happiness>20?'😐':'😢';
   batteryStats.textContent = `Battery: ${battery}%`;
   moodStats.textContent = `Mood: ${happiness}`;
   levelEl.textContent = `Level: ${level}`;
-
-  localStorage.setItem('groovyBattery', battery);
-  localStorage.setItem('groovyHappiness', happiness);
-  localStorage.setItem('groovyLevel', level);
-  localStorage.setItem('groovyExp', exp);
-
   if(happiness<20) battery -=0.5;
-
-  if(battery <=0){
-    dead = true;
-    battery = 0;
-    groovy.style.opacity = 0.3;
-    showDeathMessage();
-  }
+  if(battery <=0){ dead = true; battery=0; groovy.style.opacity=0.3; showDeathMessage(); }
 }
 
 function showMessage(msg){
@@ -210,21 +132,13 @@ function showDeathMessage(){
 }
 
 function restartGame(){
-  battery = 100;
-  happiness = 80;
-  level = 1;
-  exp = 0;
-  dead = false;
-  groovy.style.opacity = 1;
-  lastMoodAction = "";
-  consecutiveMoodCount = 0;
-  updateGroovyStats();
-  intro();
+  battery = 100; happiness = 80; level = 1; exp = 0; dead = false;
+  groovy.style.opacity = 1; lastMoodAction=""; consecutiveMoodCount=0;
+  updateGroovyStats(); intro();
 }
 
 setInterval(()=>{
-  if(dead) return;
-  battery -=1; if(battery<0) battery=0;
+  if(dead) return; battery -=1; if(battery<0) battery=0;
   happiness -=1; if(happiness<0) happiness=0;
   updateGroovyStats();
 },10000);
@@ -236,53 +150,49 @@ function intro(){
         "You can feed me, play with me, tell jokes, dance, hug me, and more!",
         "Let's start our adventure together!"
     ];
-    let index = 0;
-    function nextMessage(){
-        if(dead) return;
-        if(index<introText.length){
-            showMessage(introText[index]);
-            index++;
-            setTimeout(nextMessage, 2000);
-        } else {
-            showMessage("Groovy is ready! Interact with him!");
-        }
+    let index=0;
+    function nextMessage(){ if(dead) return;
+        if(index<introText.length){ showMessage(introText[index]); index++; setTimeout(nextMessage, 2000);}
+        else showMessage("Groovy is ready! Interact with him!");
     }
     nextMessage();
 }
 
-// Interactions
+// Mood phrases
+const moodPhrases = {
+  play: ["Yay! Let's play!", "I'm having so much fun!", "Whee!"],
+  pet: ["Hehe! I love that!", "Thanks for petting me!", "So cozy!"],
+  dance: ["Let's boogie!", "I love to dance!", "Groovy moves!"],
+  workout: ["Phew! That was a good workout!", "Feeling strong!", "Sweat mode activated!"],
+  bath: ["All clean and shiny!", "Splish splash!", "Feeling refreshed!"],
+  hug: ["Aww, thanks!", "Hugs are the best!", "I feel loved!"]
+};
+
 function interact(action){
   if(dead) return;
   let message="";
 
   const moodActions = ['play','pet','dance','workout','bath','hug'];
   if(moodActions.includes(action)){
-    if(lastMoodAction === action){
-      consecutiveMoodCount++;
-      if(consecutiveMoodCount>=3){
-        gainHappiness(-10); // penalty
-        message = "Groovy: I'm getting bored of this...";
-      } else {
-        gainHappiness(10); // normal increase
-        message = `Groovy did ${action}!`;
-      }
+    if(lastMoodAction===action){ consecutiveMoodCount++; }
+    else { lastMoodAction=action; consecutiveMoodCount=1; }
+    if(consecutiveMoodCount>=3){
+      gainHappiness(-10);
+      message = "I'm getting bored of this...";
     } else {
-      consecutiveMoodCount = 1;
       gainHappiness(10);
-      message = `Groovy did ${action}!`;
+      const phrases = moodPhrases[action];
+      message = phrases[Math.floor(Math.random()*phrases.length)];
     }
-    lastMoodAction = action;
   } else {
-    consecutiveMoodCount = 0;
-    lastMoodAction = "";
-    // Other actions
+    consecutiveMoodCount=0; lastMoodAction="";
     switch(action){
       case 'feed': battery+=5; if(battery>100) battery=100; gainExp(10); message="Yummy!"; break;
       case 'drink': battery+=2; if(battery>100) battery=100; gainExp(5); message="Refreshing!"; break;
       case 'charge': battery+=30; if(battery>100) battery=100; gainExp(5); message="Charging..."; break;
       case 'joke': message="Why did the robot go to school? Because it had bytes to learn!"; break;
       case 'birthday': message="It's my birthday soon!"; break;
-      case 'game': const num=Math.floor(Math.random()*10)+1; const guess=prompt("Guess a number 1-10:"); message=parseInt(guess)===num ? `Correct! It was ${num}`:`Nope! It was ${num}`; break;
+      case 'game': const num=Math.floor(Math.random()*10)+1; const guess=prompt("Guess a number 1-10:"); message=parseInt(guess)===num? `Correct! It was ${num}`:`Nope! It was ${num}`; break;
     }
   }
 
@@ -299,6 +209,5 @@ document.addEventListener('mousemove',(e)=>{ if(isDragging){ groovy.style.left=(
 updateGroovyStats();
 intro();
 </script>
-
 </body>
 </html>
