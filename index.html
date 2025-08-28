@@ -1,270 +1,256 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Groovy Virtual Pet</title>
-<style>
-body {
-  margin:0;
-  font-family:'Courier New', monospace;
-  background: url('https://cdna.artstation.com/p/assets/images/images/062/116/328/large/baylee-smith-interior.jpg?1682400211') no-repeat center center fixed;
-  background-size: cover;
-  color: #e0d8a8;
-  display:flex;
-  height:100vh;
-  overflow:hidden;
-}
-#sidebar {
-  width:250px;
-  background: rgba(34,34,34,0.9);
-  padding:20px;
-  overflow-y:auto;
-}
-#sidebar h2 { text-align:center; color:#fff; }
-#sidebar img { width:100%; border-radius:10px; margin-bottom:10px; }
-#sidebar .stats { color:#fff; margin-bottom:10px; line-height:1.5; }
-#sidebar ul { list-style:none; padding:0; margin:0; }
-#sidebar li { margin:5px 0; }
-#sidebar button {
-  width:100%; padding:10px; background:#444; color:#fff;
-  border:none; border-radius:5px; cursor:pointer; text-align:left;
-  margin-bottom:5px;
-}
-#sidebar button:hover { background:#666; }
-#main {
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:flex-start;
-  position:relative;
-  padding-top:50px;
-}
-#mood {
-  font-size:36px; 
-  margin-bottom:10px; 
-}
-#groovy {
-  width:200px;
-  transition: transform 0.3s;
-  cursor: grab;
-  position: absolute;
-  left: calc(50% - 100px);
-  top: 100px;
-}
-.bounce { animation: bounce 0.6s ease; }
-.dance { animation: dance 0.5s infinite alternate; }
-.sleep { opacity:0.5; }
-.tilt { transform: rotate(10deg); }
-
-@keyframes bounce { 0% { transform: translateY(0); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0); } }
-@keyframes dance { 0% { transform: rotate(0deg); } 50% { transform: rotate(15deg); } 100% { transform: rotate(-15deg); } }
-
-#output {
-  background: rgba(0,0,0,0.7);
-  padding:15px;
-  border-radius:10px;
-  width:60%;
-  text-align:center;
-  font-size:18px;
-  position: absolute;
-  bottom: 80px; /* moved higher for mobile */
-}
-#level {
-  text-align:center;
-  margin-top:10px;
-  font-weight:bold;
-  color:#fff;
-}
-button.restart {
-  margin-top:10px;
-  background:#ff4444;
-  color:#fff;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>Groovy the Virtual Pet</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(to bottom right, #222, #555);
+      color: white;
+    }
+    #sidebar {
+      width: 200px;
+      background: rgba(0,0,0,0.7);
+      padding: 15px;
+      overflow-y: auto;
+    }
+    #sidebar h2 { text-align: center; }
+    .command {
+      background: #444;
+      margin: 5px 0;
+      padding: 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .command:hover { background: #666; }
+    #main {
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
+      position:relative;
+      padding-top:50px;
+    }
+    #groovy {
+      width:200px;
+      position:relative;
+      cursor:grab;
+    }
+    #stats {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+      border-radius: 10px;
+      text-align: left;
+    }
+    #output {
+      background: rgba(0,0,0,0.7);
+      padding:15px;
+      border-radius:10px;
+      width:70%;
+      text-align:center;
+      font-size:18px;
+      position: absolute;
+      bottom: 80px; /* higher for mobile */
+    }
+    #warning {
+      position: absolute;
+      top: 10px;
+      font-size: 20px;
+      color: red;
+      font-weight: bold;
+    }
+    .bar {
+      height: 15px;
+      border-radius: 5px;
+      margin: 5px 0;
+      background: #333;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: limegreen;
+      width: 100%;
+    }
+    button {
+      background: #ff4444;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
 
 <div id="sidebar">
-<h2>Groovy Commands</h2>
-<img id="sidebar-groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
-
-<div class="stats" id="batteryStats">
-Battery: 100%
-</div>
-<div id="level">Level: 1</div>
-
-<ul>
-  <li><button onclick="interact('feed')">Feed</button></li>
-  <li><button onclick="interact('drink')">Give Water</button></li>
-  <li><button onclick="interact('play')">Play</button></li>
-  <li><button onclick="interact('charge')">Charge</button></li>
-  <li><button onclick="interact('pet')">Pet</button></li>
-  <li><button onclick="interact('joke')">Tell a Joke</button></li>
-  <li><button onclick="interact('dance')">Dance</button></li>
-  <li><button onclick="interact('sleep')">Sleep</button></li>
-  <li><button onclick="interact('workout')">Workout</button></li>
-  <li><button onclick="interact('bath')">Bath</button></li>
-  <li><button onclick="interact('hug')">Hug</button></li>
-  <li><button onclick="interact('birthday')">Birthday</button></li>
-  <li><button onclick="interact('game')">Play Number Game</button></li>
-</ul>
+  <h2>Commands</h2>
+  <div class="command" onclick="doAction('feed')">🍎 Feed</div>
+  <div class="command" onclick="doAction('drink')">🥤 Drink</div>
+  <div class="command" onclick="doAction('play')">🎮 Play</div>
+  <div class="command" onclick="doAction('bath')">🛁 Bath</div>
+  <div class="command" onclick="doAction('sleep')">😴 Sleep</div>
+  <div class="command" onclick="doAction('workout')">💪 Workout</div>
 </div>
 
 <div id="main">
-<div id="mood">🙂</div>
-<img id="groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
-<div id="output">Loading Groovy...</div>
+  <div id="warning"></div>
+  <img id="groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
+  <div id="stats">
+    <div>🔋 Battery: <span id="battery">100%</span></div>
+    <div>😊 Happiness: <span id="happiness">100%</span></div>
+    <div>🧼 Cleanliness: <span id="cleanliness">100%</span></div>
+    <div>❤️ Health: <span id="health">100%</span></div>
+    <div class="bar"><div id="battery-bar" class="bar-fill"></div></div>
+    <div class="bar"><div id="happy-bar" class="bar-fill"></div></div>
+    <div class="bar"><div id="clean-bar" class="bar-fill"></div></div>
+    <div class="bar"><div id="health-bar" class="bar-fill"></div></div>
+  </div>
+  <div id="output">Loading Groovy...</div>
 </div>
 
 <script>
-const groovy = document.getElementById('groovy');
-const output = document.getElementById('output');
-const batteryStats = document.getElementById('batteryStats');
-const levelEl = document.getElementById('level');
-const moodEl = document.getElementById('mood');
-const body = document.body;
+let battery = 100;
+let happiness = 100;
+let cleanliness = 100;
+let health = 100;
 
-let battery = localStorage.getItem('groovyBattery')? parseInt(localStorage.getItem('groovyBattery')): 100;
-let level = localStorage.getItem('groovyLevel')? parseInt(localStorage.getItem('groovyLevel')): 1;
-let exp = localStorage.getItem('groovyExp')? parseInt(localStorage.getItem('groovyExp')): 0;
-let happiness = localStorage.getItem('groovyHappiness')? parseInt(localStorage.getItem('groovyHappiness')): 80;
-let dead = false;
+let groovy = document.getElementById("groovy");
+let output = document.getElementById("output");
+let warning = document.getElementById("warning");
 
-const jokes = [
-"Why did the robot go on vacation? He needed to recharge his batteries! 🔋",
-"What do you call a pirate robot? Arrr2-D2! 🏴‍☠️",
-"Why was the robot so bad at soccer? Because it kept kicking up sparks! ⚡",
-"What do you get if you cross a robot and a tractor? A transfarmer! 🚜",
-"Why did the robot cross the road? Because it was programmed to! 🤖",
-"How do robots pay for things? With cache! 💰",
-"Why did the computer get cold? It left its Windows open! ❄️",
-"Why did the robot go on a diet? Too many bytes! 🍔"
-];
+// Update stats UI
+function updateGroovyStats() {
+  document.getElementById("battery").textContent = battery + "%";
+  document.getElementById("happiness").textContent = happiness + "%";
+  document.getElementById("cleanliness").textContent = cleanliness + "%";
+  document.getElementById("health").textContent = health + "%";
+  document.getElementById("battery-bar").style.width = battery + "%";
+  document.getElementById("happy-bar").style.width = happiness + "%";
+  document.getElementById("clean-bar").style.width = cleanliness + "%";
+  document.getElementById("health-bar").style.width = health + "%";
 
-const idleMessages = [
-"Hey there! 🤖","Groovy is ready to party! 🎉","Beep boop! I'm groovy! 💚","I feel fantastic today! 😎",
-"Let's dance! 💃","Processing your awesomeness... ✅","Groovy loves interacting with humans! 🖐️",
-"Groovy's circuits are buzzing with joy! 🌀","Charging up my happiness! 🔋","I am feeling groovy! 🟢",
-"Fun level: MAX! 🎉","Ready for adventure! 🏁"
-];
-
-function updateGroovyStats(){
-  if(dead) return;
-
-  let mood = happiness>80?'😄':happiness>50?'🙂':happiness>20?'😐':'😢';
-  moodEl.textContent = mood;
-
-  batteryStats.textContent = `Battery: ${battery}%`;
-  levelEl.textContent = `Level: ${level}`;
-
-  localStorage.setItem('groovyBattery', battery);
-  localStorage.setItem('groovyHappiness', happiness);
-  localStorage.setItem('groovyLevel', level);
-  localStorage.setItem('groovyExp', exp);
-
-  if(battery <= 0){
-    dead = true;
-    battery = 0;
-    groovy.style.opacity = 0.3;
-    showDeathMessage();
+  // Image change
+  if (happiness < 50 || cleanliness < 30 || health < 50) {
+    groovy.src = "https://img.freepik.com/free-vector/ai-technology-robot-cyborg-illustrations_128561063.htm";
+  } else {
+    groovy.src = "https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png";
   }
+
+  // Show warnings
+  if (cleanliness < 30) warning.textContent = "⚠️ Groovy feels dirty!";
+  else if (happiness < 30) warning.textContent = "⚠️ Groovy feels sad...";
+  else if (battery < 20) warning.textContent = "⚠️ Groovy needs charging!";
+  else warning.textContent = "";
 }
 
-function gainExp(amount){ exp+=amount; if(exp>=100){ level++; exp=0; showMessage(`🎉 Groovy leveled up! Now at level ${level}!`); } }
-function gainHappiness(amount){ happiness+=amount; if(happiness>100) happiness=100; if(happiness<0) happiness=0; updateGroovyStats(); }
-
-function showMessage(msg){
-  if(dead) return;
+// Show message
+function showMessage(msg) {
   output.textContent = msg;
-  groovy.classList.add('bounce');
-  setTimeout(()=>{ groovy.classList.remove('bounce'); },600);
 }
 
-function idleAnimations(){ if(Math.random()<0.3){ groovy.classList.add('tilt'); setTimeout(()=>{ groovy.classList.remove('tilt'); },800); } }
-
-function showDeathMessage(){
-  output.innerHTML = "💀 Groovy died!<br><button class='restart' onclick='restartGame()'>Restart</button>";
-}
-
-function restartGame(){
-  battery = 100;
-  happiness = 80;
-  level = 1;
-  exp = 0;
-  dead = false;
-  groovy.style.opacity = 1;
-  updateGroovyStats();
-  intro();
-}
-
-setInterval(()=>{
-  if(dead) return;
-  battery -=1; if(battery<0) battery=0;
-  happiness -=1; if(happiness<0) happiness=0;
-  updateGroovyStats();
-  if(Math.random()<0.2) showMessage(idleMessages[Math.floor(Math.random()*idleMessages.length)]);
-  idleAnimations();
-},10000);
-
-function intro(){
-    const introText = [
-        "🤖 Hello! My name is Groovy, your personal virtual robot companion!",
-        "I love playing, learning, and keeping you company!",
-        "You can feed me, play with me, tell jokes, dance, hug me, and more!",
-        "My birthday is on Aug 27, and I get happier when we interact!",
-        "Let's start our adventure together! 💚"
-    ];
-    let index = 0;
-    function nextMessage(){
-        if(dead) return;
-        if(index<introText.length){
-            output.textContent = introText[index];
-            groovy.classList.add('bounce');
-            setTimeout(()=>{ groovy.classList.remove('bounce'); },600);
-            index++;
-            setTimeout(nextMessage, 2500);
-        } else {
-            output.textContent = "Groovy is ready! Interact with him! 🙂";
-        }
-    }
-    nextMessage();
-}
-
-// Interactions
-function interact(action){
-  if(dead) return;
-  let message="";
-  switch(action){
-    case 'feed': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(5); message="Groovy: Yummy! 🍎"; break;
-    case 'drink': battery+=2; if(battery>100) battery=100; gainExp(5); gainHappiness(5); message="Groovy: Refreshing! 💧"; break;
-    case 'play': battery-=5; if(battery<0) battery=0; gainExp(15); gainHappiness(15); message="Groovy: That was fun! 😄"; break;
-    case 'charge': battery+=30; if(battery>100) battery=100; gainExp(5); gainHappiness(5); message="Groovy: Charging... ⚡"; break;
-    case 'pet': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(10); message="Groovy: Yay! Thanks! 💚"; break;
-    case 'dance': gainExp(15); gainHappiness(10); message="Groovy: Let's dance! 💃"; groovy.classList.add('dance'); setTimeout(()=>{ groovy.classList.remove('dance'); },3000); break;
-    case 'sleep': message="Groovy: Sleeping... 😴"; groovy.classList.add('sleep'); setTimeout(()=>{ groovy.classList.remove('sleep'); },5000); break;
-    case 'workout': battery-=10; if(battery<0) battery=0; gainExp(20); gainHappiness(5); message="Groovy: Working out! 💪"; break;
-    case 'bath': gainExp(5); gainHappiness(5); message="Groovy: Feeling clean and shiny! 🛁"; break;
-    case 'hug': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(10); message="Groovy: Aww, thanks! 🤗"; break;
-    case 'joke': gainExp(5); gainHappiness(5); message="Groovy: "+jokes[Math.floor(Math.random()*jokes.length)]; break;
-    case 'birthday': const today=new Date(); const isBirthday=today.getMonth()===7 && today.getDate()===27; if(isBirthday){ message="🎉 Happy Birthday! Groovy is celebrating today! 🎂"; groovy.classList.add('dance'); setTimeout(()=>{ groovy.classList.remove('dance'); },5000); } else { message="Groovy: My birthday is on Aug 27! 🗓️"; } break;
-    case 'game': const num=Math.floor(Math.random()*10)+1; const guess=prompt("Guess a number between 1-10:"); if(parseInt(guess)===num) message=`Groovy: Correct! 🎉 It was ${num}!`; else message=`Groovy: Nope! 😅 It was ${num}.`; gainExp(10); gainHappiness(5); break;
-    default: message="Groovy: Unknown action!";
+// Handle actions
+function doAction(action) {
+  if (battery <= 0 || health <= 0) {
+    showMessage("💀 Groovy has died! Please restart.");
+    return;
   }
+
+  let message = "";
+
+  switch(action) {
+    case 'feed':
+      battery -= 2;
+      cleanliness -= 10;
+      happiness += 5;
+      message = "🍎 Groovy ate some food!";
+      break;
+    case 'drink':
+      battery -= 2;
+      cleanliness -= 5;
+      happiness += 3;
+      message = "🥤 Groovy had a drink!";
+      break;
+    case 'play':
+      if (cleanliness < 30) {
+        message = "🧼 Groovy is too dirty to play!";
+      } else {
+        battery -= 5;
+        happiness += 10;
+        cleanliness -= 5;
+        message = "🎮 Groovy had fun playing!";
+      }
+      break;
+    case 'bath':
+      cleanliness = 100;
+      happiness += 5;
+      battery -= 3;
+      message = "🛁 Groovy is squeaky clean!";
+      break;
+    case 'sleep':
+      battery = Math.min(100, battery + 20);
+      message = "😴 Groovy took a nap and recharged!";
+      break;
+    case 'workout':
+      if (cleanliness < 30) {
+        message = "🧼 Groovy is too dirty to work out!";
+      } else {
+        battery -= 8;
+        happiness += 7;
+        cleanliness -= 10;
+        message = "💪 Groovy did some exercise!";
+      }
+      break;
+    default:
+      message = "Unknown action!";
+  }
+
+  // Clamp values
+  battery = Math.max(0, Math.min(100, battery));
+  happiness = Math.max(0, Math.min(100, happiness));
+  cleanliness = Math.max(0, Math.min(100, cleanliness));
+  health = Math.max(0, Math.min(100, health));
+
   showMessage(message);
   updateGroovyStats();
 }
 
-// Drag Groovy
-let isDragging=false, offsetX=0, offsetY=0;
-groovy.addEventListener('mousedown',(e)=>{ isDragging=true; offsetX=e.clientX-groovy.offsetLeft; offsetY=e.clientY-groovy.offsetTop; groovy.style.cursor='grabbing'; });
-document.addEventListener('mouseup',()=>{ isDragging=false; groovy.style.cursor='grab'; });
-document.addEventListener('mousemove',(e)=>{ if(isDragging){ groovy.style.left=(e.clientX-offsetX)+'px'; groovy.style.top=(e.clientY-offsetY)+'px'; } });
+// Decay over time
+setInterval(()=>{
+  if (battery > 0 && health > 0) {
+    battery -= 1;
+    cleanliness -= 0.5;
+    happiness -= 0.5;
+  }
+
+  // Health penalties
+  if (cleanliness < 30) health -= 1;
+  if (happiness < 30) health -= 1;
+  if (battery <= 0) health -= 2;
+
+  // Death
+  if (health <= 0) {
+    showMessage("💀 Groovy has died! Game Over.");
+    groovy.style.opacity = 0.5;
+    warning.textContent = "❌ Groovy is gone...";
+  }
+
+  updateGroovyStats();
+}, 5000);
 
 // Initialize
 updateGroovyStats();
-intro();
+showMessage("🤖 Hi! I'm Groovy, your virtual robot pet.");
 </script>
 
 </body>
