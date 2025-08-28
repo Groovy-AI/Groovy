@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Groovy Virtual Pet - Tamagotchi Edition</title>
+<title>Groovy Virtual Pet</title>
 <style>
 body {
   margin:0;
@@ -47,7 +47,7 @@ body {
 }
 #groovy {
   width:200px;
-  transition: transform 0.3s, opacity 0.5s;
+  transition: transform 0.3s;
   cursor: grab;
   position: absolute;
   left: calc(50% - 100px);
@@ -90,12 +90,11 @@ button.restart {
 <h2>Groovy Commands</h2>
 <img id="sidebar-groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
 
-<div class="stats" id="batteryStats">Battery: 100%</div>
-<div class="stats" id="hungerStats">Hunger: 0%</div>
-<div class="stats" id="thirstStats">Thirst: 0%</div>
-<div class="stats" id="cleanlinessStats">Cleanliness: 100%</div>
-<div class="stats" id="healthStats">Health: 100%</div>
+<div class="stats" id="batteryStats">
+Battery: 100%
+</div>
 <div id="level">Level: 1</div>
+<div id="mood">🙂</div>
 
 <ul>
   <li><button onclick="interact('feed')">Feed</button></li>
@@ -113,121 +112,119 @@ button.restart {
 </div>
 
 <div id="main">
-<div id="mood">🙂</div>
 <img id="groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
 <div id="output">Loading Groovy...</div>
+<button class="restart" onclick="restartGame()" style="display:none;">Restart</button>
 </div>
 
 <script>
 const groovy = document.getElementById('groovy');
 const output = document.getElementById('output');
 const batteryStats = document.getElementById('batteryStats');
-const hungerStats = document.getElementById('hungerStats');
-const thirstStats = document.getElementById('thirstStats');
-const cleanlinessStats = document.getElementById('cleanlinessStats');
-const healthStats = document.getElementById('healthStats');
 const levelEl = document.getElementById('level');
 const moodEl = document.getElementById('mood');
+const restartBtn = document.querySelector('button.restart');
 
-let battery = 100, hunger = 0, thirst = 0, cleanliness = 100, health = 100;
-let level = 1, exp = 0, happiness = 80;
-let dead = false;
-
+let battery = 100, level = 1, exp = 0, happiness = 80, dead = false;
 let groovyVoice = null;
+
+// Load voices manually
 function loadVoices() {
   const voices = speechSynthesis.getVoices();
-  if(voices.length > 0){
-    // MANUALLY SET YOUR VOICE NAME HERE
-    groovyVoice = voices.find(v => v.name === "Microsoft Zira Desktop") || voices[0];
-  }
+  groovyVoice = voices.find(v => v.name.includes("Google UK English Female")) || voices[0];
 }
 speechSynthesis.onvoiceschanged = loadVoices;
 loadVoices();
 
-function groovySpeak(msg){
+function groovySpeak(text){
   if(!groovyVoice) loadVoices();
-  const utter = new SpeechSynthesisUtterance(msg.replace(/[\u{1F300}-\u{1F6FF}]/gu,'')); // remove emojis
+  const utter = new SpeechSynthesisUtterance(text.replace(/[\u{1F600}-\u{1F64F}]/gu,""));
   utter.voice = groovyVoice;
   utter.pitch = 1.5;
   utter.rate = 1.1;
+  utter.volume = 1;
   speechSynthesis.speak(utter);
 }
 
-function updateStats(){
-  batteryStats.textContent = `Battery: ${Math.round(battery)}%`;
-  hungerStats.textContent = `Hunger: ${Math.round(hunger)}%`;
-  thirstStats.textContent = `Thirst: ${Math.round(thirst)}%`;
-  cleanlinessStats.textContent = `Cleanliness: ${Math.round(cleanliness)}%`;
-  healthStats.textContent = `Health: ${Math.round(health)}%`;
-  levelEl.textContent = `Level: ${level}`;
-  
-  let mood = happiness>80?'😄':happiness>50?'🙂':happiness>20?'😐':'😢';
-  moodEl.textContent = mood;
+function updateGroovyStats(){
+  if(dead) return;
+  let moodEmoji = happiness>80?'😄':happiness>50?'🙂':happiness>20?'😐':'😢';
+  moodEl.textContent = moodEmoji;
 
-  if(battery<=0 || health<=0){
+  batteryStats.textContent = `Battery: ${battery}%`;
+  levelEl.textContent = `Level: ${level}`;
+
+  // Mood affects battery decay speed
+  const moodFactor = 1 + (50 - Math.min(happiness,50))/50; // if happiness <50, battery drains faster
+
+  if(battery <= 0){
+    battery = 0;
     dead = true;
     groovy.style.opacity = 0.3;
-    showMessage("Groovy died! Click Restart.");
+    showDeathMessage();
   }
-}
-
-function gainExp(amount){
-  exp += amount;
-  if(exp>=100){
-    level++;
-    exp = 0;
-    showMessage(`Groovy leveled up! Now at level ${level}!`);
-  }
-}
-
-function gainHappiness(amount){
-  happiness += amount;
-  if(happiness>100) happiness=100;
-  if(happiness<0) happiness=0;
 }
 
 function showMessage(msg){
   if(dead) return;
-  output.textContent = msg;
-  groovy.classList.add('bounce');
-  setTimeout(()=>groovy.classList.remove('bounce'),600);
+  output.textContent = msg.replace(/[\u{1F600}-\u{1F64F}]/gu,"");
   groovySpeak(msg);
+  groovy.classList.add('bounce');
+  setTimeout(()=>{ groovy.classList.remove('bounce'); },600);
 }
 
+function gainExp(amount){ exp+=amount; if(exp>=100){ level++; exp=0; showMessage(`Groovy leveled up! Now at level ${level}!`); } }
+function gainHappiness(amount){ happiness+=amount; if(happiness>100) happiness=100; if(happiness<0) happiness=0; updateGroovyStats(); }
+
+function showDeathMessage(){
+  output.textContent = "💀 Groovy died!";
+  restartBtn.style.display = "block";
+}
+
+function restartGame(){
+  battery = 100;
+  happiness = 80;
+  level = 1;
+  exp = 0;
+  dead = false;
+  groovy.style.opacity = 1;
+  restartBtn.style.display = "none";
+  updateGroovyStats();
+  showMessage("Groovy is ready again!");
+}
+
+// Interactions
 function interact(action){
   if(dead) return;
-  let msg = "";
+  let message="";
   switch(action){
-    case 'feed': hunger = Math.max(0,hunger-20); battery=Math.min(100,battery+5); gainExp(10); gainHappiness(5); msg="Yummy, thanks!"; break;
-    case 'drink': thirst = Math.max(0,thirst-20); battery=Math.min(100,battery+2); gainExp(5); gainHappiness(5); msg="Refreshing!"; break;
-    case 'play': battery=Math.max(0,battery-5); hunger+=5; thirst+=5; cleanliness=Math.max(0,cleanliness-10); gainExp(15); gainHappiness(15); msg="That was fun!"; break;
-    case 'charge': battery=Math.min(100,battery+30); gainExp(5); gainHappiness(5); msg="Charging..."; break;
-    case 'pet': battery=Math.min(100,battery+5); gainExp(10); gainHappiness(10); msg="Yay! Thanks!"; break;
-    case 'dance': gainExp(15); gainHappiness(10); msg="Let's dance!"; groovy.classList.add('dance'); setTimeout(()=>groovy.classList.remove('dance'),3000); break;
-    case 'sleep': msg="Sleeping..."; groovy.classList.add('sleep'); setTimeout(()=>groovy.classList.remove('sleep'),5000); battery=Math.min(100,battery+20); break;
-    case 'workout': battery=Math.max(0,battery-10); hunger+=10; thirst+=10; cleanliness=Math.max(0,cleanliness-10); gainExp(20); gainHappiness(5); msg="Workout done!"; break;
-    case 'bath': cleanliness = 100; gainExp(5); gainHappiness(5); msg="All clean!"; break;
-    case 'hug': battery=Math.min(100,battery+5); gainExp(10); gainHappiness(10); msg="Aww, thanks!"; break;
-    case 'joke': gainExp(5); gainHappiness(5); msg="Why did the robot go to school? Because it had lots of bytes!"; break;
-    default: msg="Unknown action!";
+    case 'feed': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(5); message="Yummy!"; break;
+    case 'drink': battery+=2; if(battery>100) battery=100; gainExp(5); gainHappiness(5); message="Refreshing!"; break;
+    case 'play': battery-=5; gainExp(15); gainHappiness(15); message="That was fun!"; break;
+    case 'charge': battery+=30; if(battery>100) battery=100; gainExp(5); gainHappiness(5); message="Charging up!"; break;
+    case 'pet': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(10); message="Yay! Thanks!"; break;
+    case 'dance': gainExp(15); gainHappiness(10); message="Let's dance!"; break;
+    case 'sleep': message="Sleeping..."; break;
+    case 'workout': battery-=10; if(battery<0) battery=0; gainExp(20); gainHappiness(5); message="Working out!"; break;
+    case 'bath': gainExp(5); gainHappiness(5); message="Feeling clean!"; break;
+    case 'hug': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(10); message="Aww, thanks!"; break;
+    case 'joke': message="Why did the robot go to school? Because it had a lot of bytes to learn!"; break;
+    default: message="Unknown action!";
   }
-
-  if(hunger>80 || thirst>80 || cleanliness<20) health=Math.max(0,health-5);
-
-  updateStats();
-  showMessage(msg);
+  showMessage(message);
+  updateGroovyStats();
 }
 
-// Stat decay over time
+// Battery decay loop
 setInterval(()=>{
   if(dead) return;
-  hunger = Math.min(100,hunger+1);
-  thirst = Math.min(100,thirst+1);
-  cleanliness = Math.max(0,cleanliness-0.5);
-  battery = Math.max(0,battery-0.2);
-  if(hunger>80 || thirst>80 || cleanliness<20) health = Math.max(0,health-1);
-  updateStats();
-},5000);
+  let moodFactor = 1 + (50 - Math.min(happiness,50))/50;
+  battery -= 1 * moodFactor;
+  if(battery<0) battery=0;
+  happiness -= 0.5;
+  if(happiness<0) happiness=0;
+  updateGroovyStats();
+},10000);
 
 // Drag Groovy
 let isDragging=false, offsetX=0, offsetY=0;
@@ -235,12 +232,10 @@ groovy.addEventListener('mousedown',(e)=>{ isDragging=true; offsetX=e.clientX-gr
 document.addEventListener('mouseup',()=>{ isDragging=false; groovy.style.cursor='grab'; });
 document.addEventListener('mousemove',(e)=>{ if(isDragging){ groovy.style.left=(e.clientX-offsetX)+'px'; groovy.style.top=(e.clientY-offsetY)+'px'; } });
 
-// Intro
-function intro(){
-  showMessage("Hello! I'm Groovy, your robot pet. Take care of me!");
-}
-intro();
-updateStats();
+// Init
+updateGroovyStats();
+showMessage("Hello! I'm Groovy, your robot pet!");
 </script>
+
 </body>
 </html>
