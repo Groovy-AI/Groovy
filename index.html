@@ -241,27 +241,29 @@ function interact(action){
       consecutiveMoodCount++;
       if(consecutiveMoodCount>=3){
         gainHappiness(-10); // penalty
+        message = "Groovy: I'm getting bored of this...";
       } else {
-        gainHappiness(10);
+        gainHappiness(10); // normal increase
+        message = `Groovy did ${action}!`;
       }
     } else {
       consecutiveMoodCount = 1;
       gainHappiness(10);
+      message = `Groovy did ${action}!`;
     }
     lastMoodAction = action;
-    message = `Groovy did ${action}!`; // mood actions output
   } else {
     consecutiveMoodCount = 0;
     lastMoodAction = "";
-  }
-
-  switch(action){
-    case 'feed': battery+=5; if(battery>100) battery=100; gainExp(10); message="Yummy!"; break;
-    case 'drink': battery+=2; if(battery>100) battery=100; gainExp(5); message="Refreshing!"; break;
-    case 'charge': battery+=30; if(battery>100) battery=100; gainExp(5); message="Charging..."; break;
-    case 'joke': message="Why did the robot go to school? Because it had bytes to learn!"; break;
-    case 'birthday': message="It's my birthday soon!"; break;
-    case 'game': const num=Math.floor(Math.random()*10)+1; const guess=prompt("Guess a number 1-10:"); message=parseInt(guess)===num ? `Correct! It was ${num}`:`Nope! It was ${num}`; break;
+    // Other actions
+    switch(action){
+      case 'feed': battery+=5; if(battery>100) battery=100; gainExp(10); message="Yummy!"; break;
+      case 'drink': battery+=2; if(battery>100) battery=100; gainExp(5); message="Refreshing!"; break;
+      case 'charge': battery+=30; if(battery>100) battery=100; gainExp(5); message="Charging..."; break;
+      case 'joke': message="Why did the robot go to school? Because it had bytes to learn!"; break;
+      case 'birthday': message="It's my birthday soon!"; break;
+      case 'game': const num=Math.floor(Math.random()*10)+1; const guess=prompt("Guess a number 1-10:"); message=parseInt(guess)===num ? `Correct! It was ${num}`:`Nope! It was ${num}`; break;
+    }
   }
 
   showMessage(message);
