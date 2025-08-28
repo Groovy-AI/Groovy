@@ -152,34 +152,30 @@ const idleMessages = [
 // --- TTS setup ---
 let groovyVoice = null;
 function loadVoices() {
-  let voices = speechSynthesis.getVoices();
-  if (voices.length > 0) {
-    // Hard-coded cute robot voice (change the name to any available voice on your system)
-    groovyVoice = voices.find(v => v.name === "Microsoft Zira Desktop - English (United States)") || voices[0];
-  }
+    let voices = speechSynthesis.getVoices();
+    if (voices.length > 0) {
+        groovyVoice = voices.find(v => v.name.includes("Zira") || v.name.includes("Samantha") || v.name.toLowerCase().includes("english")) || voices[0];
+    }
 }
-speechSynthesis.onvoiceschanged = loadVoices;
-loadVoices();
+
+function waitForVoices(callback) {
+    loadVoices();
+    if (speechSynthesis.getVoices().length === 0) {
+        speechSynthesis.onvoiceschanged = () => { loadVoices(); callback(); };
+    } else { callback(); }
+}
 
 function groovySpeak(text){
-  if(!groovyVoice) loadVoices();
-  // remove emojis
-  let cleanText = text.replace(/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{2700}-\u{27BF}]/gu,'');
-  let u = new SpeechSynthesisUtterance(cleanText);
-  u.voice = groovyVoice;
-  u.pitch = 1.5;
-  u.rate = 1.2;
-  speechSynthesis.speak(u);
+    if(!groovyVoice) return;
+    let cleanText = text.replace(/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{2700}-\u{27BF}]/gu,'');
+    let u = new SpeechSynthesisUtterance(cleanText);
+    u.voice = groovyVoice;
+    u.pitch = 1.5;
+    u.rate = 1.2;
+    speechSynthesis.speak(u);
 }
 
-function showMessage(msg){
-  if(dead) return;
-  output.textContent = msg.replace(/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{2700}-\u{27BF}]/gu,'');
-  groovySpeak(msg);
-}
-
-// … rest of your original code unchanged, just replace showMessage calls with this version for TTS
-
+// --- Functions ---
 function updateGroovyStats(){
   if(dead) return;
   let mood = happiness>80?'😄':happiness>50?'🙂':happiness>20?'😐':'😢';
@@ -190,13 +186,11 @@ function updateGroovyStats(){
   localStorage.setItem('groovyHappiness', happiness);
   localStorage.setItem('groovyLevel', level);
   localStorage.setItem('groovyExp', exp);
-
   if(!dead){
-    if(battery <= 10 && battery > 0) showMessage("Warning: Battery critically low!");
+    if(battery <= 10 && battery > 0) showMessage("⚠️ Warning: Battery critically low!");
     else if(battery <= 30) showMessage("Battery is low!");
     if(happiness <= 20) showMessage("Groovy is feeling sad! Play with him!");
   }
-
   if(battery <= 0){
     dead = true;
     battery = 0;
@@ -205,7 +199,88 @@ function updateGroovyStats(){
   }
 }
 
-// … include your gainExp, gainHappiness, idleAnimations, restartGame, intro, interact functions exactly as before, just using the new showMessage for TTS
+function gainExp(amount){ exp+=amount; if(exp>=100){ level++; exp=0; showMessage(`Groovy leveled up! Now at level ${level}!`); } }
+function gainHappiness(amount){ happiness+=amount; if(happiness>100) happiness=100; if(happiness<0) happiness=0; updateGroovyStats(); }
+
+function showMessage(msg){
+  if(dead) return;
+  output.textContent = msg;
+  groovy.classList.add('bounce');
+  setTimeout(()=>{ groovy.classList.remove('bounce'); },600);
+  groovySpeak(msg);
+}
+
+function idleAnimations(){ if(Math.random()<0.3){ groovy.classList.add('tilt'); setTimeout(()=>{ groovy.classList.remove('tilt'); },800); } }
+
+function showDeathMessage(){
+  output.innerHTML = "Groovy died!<br><button class='restart' onclick='restartGame()'>Restart</button>";
+}
+
+function restartGame(){
+  battery = 100;
+  happiness = 80;
+  level = 1;
+  exp = 0;
+  dead = false;
+  groovy.style.opacity = 1;
+  updateGroovyStats();
+  intro();
+}
+
+setInterval(()=>{
+  if(dead) return;
+  battery -=1; if(battery<0) battery=0;
+  happiness -=1; if(happiness<0) happiness=0;
+  updateGroovyStats();
+  if(Math.random()<0.2) showMessage(idleMessages[Math.floor(Math.random()*idleMessages.length)]);
+  idleAnimations();
+},10000);
+
+function intro(){
+    const introText = [
+        "Hello! My name is Groovy, your personal virtual robot companion!",
+        "I love playing, learning, and keeping you company!",
+        "You can feed me, play with me, tell jokes, dance, hug me, and more!",
+        "My birthday is on Aug 27, and I get happier when we interact!",
+        "Let's start our adventure together!"
+    ];
+    let index = 0;
+    function nextMessage(){
+        if(dead) return;
+        if(index<introText.length){
+            showMessage(introText[index]);
+            index++;
+            setTimeout(nextMessage, 2500);
+        } else {
+            showMessage("Groovy is ready! Interact with him!");
+        }
+    }
+    nextMessage();
+}
+
+// Interactions
+function interact(action){
+  if(dead) return;
+  let message="";
+  switch(action){
+    case 'feed': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(5); message="Yummy!"; break;
+    case 'drink': battery+=2; if(battery>100) battery=100; gainExp(5); gainHappiness(5); message="Refreshing!"; break;
+    case 'play': battery-=5; if(battery<0) battery=0; gainExp(15); gainHappiness(15); message="That was fun!"; break;
+    case 'charge': battery+=30; if(battery>100) battery=100; gainExp(5); gainHappiness(5); message="Charging..."; break;
+    case 'pet': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(10); message="Yay! Thanks!"; break;
+    case 'dance': gainExp(15); gainHappiness(10); message="Let's dance!"; groovy.classList.add('dance'); setTimeout(()=>{ groovy.classList.remove('dance'); },3000); break;
+    case 'sleep': message="Sleeping..."; groovy.classList.add('sleep'); setTimeout(()=>{ groovy.classList.remove('sleep'); },5000); break;
+    case 'workout': battery-=10; if(battery<0) battery=0; gainExp(20); gainHappiness(5); message="Working out!"; break;
+    case 'bath': gainExp(5); gainHappiness(5); message="Feeling clean!"; break;
+    case 'hug': battery+=5; if(battery>100) battery=100; gainExp(10); gainHappiness(10); message="Aww, thanks!"; break;
+    case 'joke': gainExp(5); gainHappiness(5); message=jokes[Math.floor(Math.random()*jokes.length)]; break;
+    case 'birthday': const today=new Date(); const isBirthday=today.getMonth()===7 && today.getDate()===27; if(isBirthday){ message="Happy Birthday!"; groovy.classList.add('dance'); setTimeout(()=>{ groovy.classList.remove('dance'); },5000); } else { message="My birthday is on Aug 27!"; } break;
+    case 'game': const num=Math.floor(Math.random()*10)+1; const guess=prompt("Guess a number between 1-10:"); if(parseInt(guess)===num) message=`Correct! It was ${num}!`; else message=`Nope! It was ${num}.`; gainExp(10); gainHappiness(5); break;
+    default: message="Unknown action!";
+  }
+  showMessage(message);
+  updateGroovyStats();
+}
 
 // Drag Groovy
 let isDragging=false, offsetX=0, offsetY=0;
@@ -213,9 +288,11 @@ groovy.addEventListener('mousedown',(e)=>{ isDragging=true; offsetX=e.clientX-gr
 document.addEventListener('mouseup',()=>{ isDragging=false; groovy.style.cursor='grab'; });
 document.addEventListener('mousemove',(e)=>{ if(isDragging){ groovy.style.left=(e.clientX-offsetX)+'px'; groovy.style.top=(e.clientY-offsetY)+'px'; } });
 
-// Initialize
-updateGroovyStats();
-intro();
+// Initialize after voices are ready
+waitForVoices(()=>{
+    updateGroovyStats();
+    intro();
+});
 </script>
 
 </body>
