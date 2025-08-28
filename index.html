@@ -135,8 +135,9 @@ let exp = localStorage.getItem('groovyExp')? parseInt(localStorage.getItem('groo
 let happiness = localStorage.getItem('groovyHappiness')? parseInt(localStorage.getItem('groovyHappiness')): 80;
 let dead = false;
 
-// Track recent mood actions for penalty
-let recentMoodActions = [];
+// Track last mood action
+let lastMoodAction = "";
+let consecutiveMoodCount = 0;
 
 function gainExp(amount){ 
   exp+=amount; 
@@ -193,7 +194,8 @@ function restartGame(){
   exp = 0;
   dead = false;
   groovy.style.opacity = 1;
-  recentMoodActions = [];
+  lastMoodAction = "";
+  consecutiveMoodCount = 0;
   updateGroovyStats();
   intro();
 }
@@ -232,18 +234,25 @@ function intro(){
 function interact(action){
   if(dead) return;
   let message="";
-  const moodActions = ['play','pet','dance','workout','bath','hug'];
 
+  const moodActions = ['play','pet','dance','workout','bath','hug'];
   if(moodActions.includes(action)){
-    const count = recentMoodActions.filter(a => a===action).length;
-    if(count>=2){ 
-      gainHappiness(-10); // decrease mood if repeated 3+ times
+    if(lastMoodAction === action){
+      consecutiveMoodCount++;
+      if(consecutiveMoodCount>=3){
+        gainHappiness(-10); // penalty
+      } else {
+        gainHappiness(10);
+      }
     } else {
+      consecutiveMoodCount = 1;
       gainHappiness(10);
     }
-    recentMoodActions.push(action);
-    if(recentMoodActions.length>10) recentMoodActions.shift();
-    message = ""; // no output for mood actions
+    lastMoodAction = action;
+    message = `Groovy did ${action}!`; // mood actions output
+  } else {
+    consecutiveMoodCount = 0;
+    lastMoodAction = "";
   }
 
   switch(action){
