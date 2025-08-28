@@ -2,256 +2,215 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Groovy the Virtual Pet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Groovy Virtual Pet</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      display: flex;
       margin: 0;
+      font-family: 'Courier New', monospace;
+      background: url('https://cdna.artstation.com/p/assets/images/images/062/116/328/large/baylee-smith-interior.jpg?1682400211') center/cover fixed no-repeat;
+      color: #e0d8a8;
+      display: flex;
       height: 100vh;
-      background: linear-gradient(to bottom right, #222, #555);
-      color: white;
+      overflow: hidden;
     }
     #sidebar {
-      width: 200px;
-      background: rgba(0,0,0,0.7);
-      padding: 15px;
+      width: 250px;
+      background: rgba(34,34,34,0.9);
+      padding: 20px;
       overflow-y: auto;
     }
-    #sidebar h2 { text-align: center; }
-    .command {
-      background: #444;
-      margin: 5px 0;
-      padding: 8px;
-      border-radius: 5px;
-      cursor: pointer;
-      text-align: center;
+    #sidebar h2 { color: #fff; text-align: center; margin-bottom: 10px; }
+    #sidebar img { width: 100%; border-radius: 10px; margin-bottom: 10px; }
+    #sidebar .stats { color: #fff; margin-bottom: 10px; line-height: 1.5; }
+    #sidebar ul { list-style: none; padding: 0; margin: 0; }
+    #sidebar li { margin: 5px 0; }
+    #sidebar button {
+      width: 100%; padding: 10px;
+      background: #444; color: #fff;
+      border: none; border-radius: 5px;
+      cursor: pointer; text-align: left;
     }
-    .command:hover { background: #666; }
+    #sidebar button:hover { background: #666; }
     #main {
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:flex-start;
-      position:relative;
-      padding-top:50px;
-    }
-    #groovy {
-      width:200px;
-      position:relative;
-      cursor:grab;
-    }
-    #stats {
-      position: absolute;
-      top: 10px;
-      right: 20px;
-      background: rgba(0,0,0,0.7);
-      padding: 10px;
-      border-radius: 10px;
-      text-align: left;
-    }
-    #output {
-      background: rgba(0,0,0,0.7);
-      padding:15px;
-      border-radius:10px;
-      width:70%;
-      text-align:center;
-      font-size:18px;
-      position: absolute;
-      bottom: 80px; /* higher for mobile */
+      flex: 1;
+      position: relative;
+      padding-top: 50px;
+      display: flex; flex-direction: column; align-items: center;
     }
     #warning {
       position: absolute;
       top: 10px;
-      font-size: 20px;
-      color: red;
+      color: #ff4444;
+      font-size: 18px;
       font-weight: bold;
     }
+    #groovy {
+      width: 200px;
+      transition: opacity 0.3s;
+      cursor: grab;
+      position: absolute;
+      left: calc(50% - 100px);
+      top: 100px;
+    }
+    #output {
+      position: absolute;
+      bottom: 80px;
+      width: 60%;
+      background: rgba(0,0,0,0.7);
+      color: #e0d8a8;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 18px;
+    }
     .bar {
-      height: 15px;
-      border-radius: 5px;
-      margin: 5px 0;
+      height: 12px;
+      border-radius: 6px;
       background: #333;
       overflow: hidden;
+      margin-top: 5px;
     }
-    .bar-fill {
+    .fill {
       height: 100%;
-      background: limegreen;
+      background: lightgreen;
       width: 100%;
+      transition: width 0.3s;
     }
-    button {
-      background: #ff4444;
-      color: white;
-      padding: 8px 12px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+    button.restart {
       margin-top: 10px;
+      padding: 8px 12px;
+      background: #ff4444;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-<div id="sidebar">
-  <h2>Commands</h2>
-  <div class="command" onclick="doAction('feed')">🍎 Feed</div>
-  <div class="command" onclick="doAction('drink')">🥤 Drink</div>
-  <div class="command" onclick="doAction('play')">🎮 Play</div>
-  <div class="command" onclick="doAction('bath')">🛁 Bath</div>
-  <div class="command" onclick="doAction('sleep')">😴 Sleep</div>
-  <div class="command" onclick="doAction('workout')">💪 Workout</div>
-</div>
-
-<div id="main">
-  <div id="warning"></div>
-  <img id="groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
-  <div id="stats">
-    <div>🔋 Battery: <span id="battery">100%</span></div>
-    <div>😊 Happiness: <span id="happiness">100%</span></div>
-    <div>🧼 Cleanliness: <span id="cleanliness">100%</span></div>
-    <div>❤️ Health: <span id="health">100%</span></div>
-    <div class="bar"><div id="battery-bar" class="bar-fill"></div></div>
-    <div class="bar"><div id="happy-bar" class="bar-fill"></div></div>
-    <div class="bar"><div id="clean-bar" class="bar-fill"></div></div>
-    <div class="bar"><div id="health-bar" class="bar-fill"></div></div>
+  <div id="sidebar">
+    <h2>Groovy Commands</h2>
+    <img id="sidebar-groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
+    <div class="stats" id="batteryStats">Battery: 100%</div>
+    <div class="stats" id="cleanlinessStats">Cleanliness: 100%</div>
+    <div class="stats" id="healthStats">Health: 100%</div>
+    <div id="level" class="stats">Level: 1</div>
+    <ul>
+      <li><button onclick="interact('feed')">Feed</button></li>
+      <li><button onclick="interact('drink')">Give Water</button></li>
+      <li><button onclick="interact('play')">Play</button></li>
+      <li><button onclick="interact('bath')">Bath</button></li>
+      <li><button onclick="interact('sleep')">Sleep</button></li>
+      <li><button onclick="interact('workout')">Workout</button></li>
+      <li><button onclick="interact('charge')">Charge</button></li>
+      <li><button onclick="interact('pet')">Pet</button></li>
+      <li><button onclick="interact('joke')">Tell a Joke</button></li>
+    </ul>
   </div>
-  <div id="output">Loading Groovy...</div>
-</div>
+
+  <div id="main">
+    <div id="warning"></div>
+    <img id="groovy" src="https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png" alt="Groovy">
+    <div id="output">Loading Groovy...</div>
+  </div>
 
 <script>
+const groovy = document.getElementById('groovy');
+const output = document.getElementById('output');
+const warning = document.getElementById('warning');
+const batteryStats = document.getElementById('batteryStats');
+const cleanStats = document.getElementById('cleanlinessStats');
+const healthStats = document.getElementById('healthStats');
+const levelEl = document.getElementById('level');
+
 let battery = 100;
-let happiness = 100;
 let cleanliness = 100;
 let health = 100;
+let happiness = 80;
+let exp = 0;
+let level = 1;
+let dead = false;
 
-let groovy = document.getElementById("groovy");
-let output = document.getElementById("output");
-let warning = document.getElementById("warning");
+const sadImg = "https://img.freepik.com/free-vector/ai-technology-robot-cyborg-illustrations_128561063.jpg";
 
-// Update stats UI
-function updateGroovyStats() {
-  document.getElementById("battery").textContent = battery + "%";
-  document.getElementById("happiness").textContent = happiness + "%";
-  document.getElementById("cleanliness").textContent = cleanliness + "%";
-  document.getElementById("health").textContent = health + "%";
-  document.getElementById("battery-bar").style.width = battery + "%";
-  document.getElementById("happy-bar").style.width = happiness + "%";
-  document.getElementById("clean-bar").style.width = cleanliness + "%";
-  document.getElementById("health-bar").style.width = health + "%";
+function updateStats() {
+  if (dead) return;
+  batteryStats.textContent = `Battery: ${battery}%`;
+  cleanStats.textContent = `Cleanliness: ${cleanliness}%`;
+  healthStats.textContent = `Health: ${health}%`;
+  levelEl.textContent = `Level: ${level}`;
 
-  // Image change
-  if (happiness < 50 || cleanliness < 30 || health < 50) {
-    groovy.src = "https://img.freepik.com/free-vector/ai-technology-robot-cyborg-illustrations_128561063.htm";
+  if (cleanliness < 30) warning.textContent = "⚠ Groovy feels dirty!";
+  else if (battery < 20) warning.textContent = "⚠ Groovy needs charging!";
+  else if (health < 50) warning.textContent = "⚠ Groovy isn't feeling well...";
+  else warning.textContent = "";
+
+  if (cleanliness < 50) {
+    groovy.src = sadImg;
   } else {
     groovy.src = "https://cdn3d.iconscout.com/3d/premium/thumb/personaje-robot-con-inteligencia-artificial-saludando-con-una-gran-sonrisa-3d-icon-png-download-11431338.png";
   }
 
-  // Show warnings
-  if (cleanliness < 30) warning.textContent = "⚠️ Groovy feels dirty!";
-  else if (happiness < 30) warning.textContent = "⚠️ Groovy feels sad...";
-  else if (battery < 20) warning.textContent = "⚠️ Groovy needs charging!";
-  else warning.textContent = "";
-}
-
-// Show message
-function showMessage(msg) {
-  output.textContent = msg;
-}
-
-// Handle actions
-function doAction(action) {
   if (battery <= 0 || health <= 0) {
-    showMessage("💀 Groovy has died! Please restart.");
+    dead = true;
+    groovy.style.opacity = 0.3;
+    output.innerHTML = "💀 Groovy has passed away...<br><button class='restart' onclick='restart()'>Restart Groovy</button>";
+  }
+}
+
+function interact(action) {
+  if (dead) return;
+  if (cleanliness < 30 && ['play','workout'].includes(action)) {
+    output.textContent = "Groovy is too dirty to do that! Please give a bath.";
     return;
   }
 
-  let message = "";
-
   switch(action) {
-    case 'feed':
-      battery -= 2;
-      cleanliness -= 10;
-      happiness += 5;
-      message = "🍎 Groovy ate some food!";
-      break;
-    case 'drink':
-      battery -= 2;
-      cleanliness -= 5;
-      happiness += 3;
-      message = "🥤 Groovy had a drink!";
-      break;
-    case 'play':
-      if (cleanliness < 30) {
-        message = "🧼 Groovy is too dirty to play!";
-      } else {
-        battery -= 5;
-        happiness += 10;
-        cleanliness -= 5;
-        message = "🎮 Groovy had fun playing!";
-      }
-      break;
-    case 'bath':
-      cleanliness = 100;
-      happiness += 5;
-      battery -= 3;
-      message = "🛁 Groovy is squeaky clean!";
-      break;
-    case 'sleep':
-      battery = Math.min(100, battery + 20);
-      message = "😴 Groovy took a nap and recharged!";
-      break;
-    case 'workout':
-      if (cleanliness < 30) {
-        message = "🧼 Groovy is too dirty to work out!";
-      } else {
-        battery -= 8;
-        happiness += 7;
-        cleanliness -= 10;
-        message = "💪 Groovy did some exercise!";
-      }
-      break;
-    default:
-      message = "Unknown action!";
+    case 'feed': battery = Math.min(100, battery+5); cleanliness -= 10; happiness +=5; break;
+    case 'drink': battery = Math.min(100, battery+3); cleanliness -= 5; happiness +=5; break;
+    case 'play': battery -=5; cleanliness -= 10; happiness +=15; break;
+    case 'workout': battery -=10; cleanliness -= 15; happiness +=10; break;
+    case 'bath': cleanliness = 100; happiness += 10; break;
+    case 'sleep': battery = Math.min(100, battery + 20); break;
+    case 'charge': battery = Math.min(100, battery + 30); break;
+    case 'pet': happiness +=10; break;
+    case 'joke': happiness +=5; break;
   }
-
-  // Clamp values
-  battery = Math.max(0, Math.min(100, battery));
-  happiness = Math.max(0, Math.min(100, happiness));
-  cleanliness = Math.max(0, Math.min(100, cleanliness));
-  health = Math.max(0, Math.min(100, health));
-
-  showMessage(message);
-  updateGroovyStats();
+  battery = clamp(battery);
+  cleanliness = clamp(cleanliness);
+  happiness = clamp(happiness);
+  exp += 5;
+  if (exp >= 100) { level++; exp = 0; output.textContent = `Groovy leveled up to ${level}!`; }
+  output.textContent = `You chose: ${action}`;
+  updateStats();
 }
 
-// Decay over time
-setInterval(()=>{
-  if (battery > 0 && health > 0) {
-    battery -= 1;
-    cleanliness -= 0.5;
-    happiness -= 0.5;
+function clamp(val){ return Math.max(0, Math.min(100, val)); }
+
+function decay() {
+  if (dead) return;
+  battery -= 1;
+  cleanliness -= 1;
+  happiness -= 0.5;
+  if (cleanliness < 30 || battery < 20 || happiness < 30) {
+    health -= 2;
   }
+  health = clamp(health);
+  updateStats();
+}
 
-  // Health penalties
-  if (cleanliness < 30) health -= 1;
-  if (happiness < 30) health -= 1;
-  if (battery <= 0) health -= 2;
+function restart() {
+  battery = 100; cleanliness = 100; health = 100; happiness = 80; level = 1; exp = 0; dead = false;
+  groovy.style.opacity = 1;
+  output.textContent = "Groovy is reborn! Take good care!";
+  updateStats();
+}
 
-  // Death
-  if (health <= 0) {
-    showMessage("💀 Groovy has died! Game Over.");
-    groovy.style.opacity = 0.5;
-    warning.textContent = "❌ Groovy is gone...";
-  }
-
-  updateGroovyStats();
-}, 5000);
-
-// Initialize
-updateGroovyStats();
-showMessage("🤖 Hi! I'm Groovy, your virtual robot pet.");
+setInterval(decay, 5000);
+updateStats();
+output.textContent = "Meet Groovy! Take care of him to keep him alive.";
 </script>
-
 </body>
 </html>
